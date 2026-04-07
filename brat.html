@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root { --main-color: #ffffff; } /* Warna Putih */
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: transparent; }
+        #output {
+            width: 500px; height: 500px;
+            background-color: var(--main-color);
+            display: flex; justify-content: center; align-items: center;
+            padding: 40px; box-sizing: border-box; text-align: left;
+        }
+        #brat-text {
+            font-family: "Arial Narrow", Arial, sans-serif;
+            font-weight: normal;
+            font-size: 150px; /* Ukuran awal (maksimal) */
+            line-height: 1.1;
+            letter-spacing: -2px;
+            color: black;
+            filter: blur(1.5px); /* Efek blur khas Brat */
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="output">
+        <div id="brat-text">teks contoh</div>
+    </div>
+
+    <script>
+        function autoResizeText() {
+            const textEl = document.getElementById('brat-text');
+            
+            // 1. Reset ke ukuran maksimal (150px) setiap kali teks baru dimasukkan
+            let fontSize = 150; 
+            textEl.style.fontSize = fontSize + 'px';
+
+            // 2. Tentukan batas aman. 
+            // Karena tinggi/lebar kotak 500px dan ada padding 40px (atas-bawah/kiri-kanan = 80px),
+            // maka batas area aman teks adalah 500 - 80 = 420px.
+            const maxSafeSize = 420;
+
+            // 3. Logika Pengecilan: 
+            // Selama tinggi atau lebar teks melebihi 420px, kurangi font-size terus-menerus.
+            while ((textEl.scrollHeight > maxSafeSize || textEl.scrollWidth > maxSafeSize) && fontSize > 20) {
+                fontSize -= 2; // Kurangi 2px per siklus agar cepat dan presisi
+                textEl.style.fontSize = fontSize + 'px';
+            }
+        }
+
+        // Jalankan fungsi saat file HTML pertama kali dimuat
+        autoResizeText();
+
+        // Trik Otomatisasi: 
+        // MutationObserver memantau perubahan pada teks. 
+        // Saat Puppeteer menyuntikkan teks baru dari WA, fungsi autoResizeText() akan langsung tereksekusi.
+        const observer = new MutationObserver(autoResizeText);
+        observer.observe(document.getElementById('brat-text'), { childList: true, characterData: true, subtree: true });
+    </script>
+</body>
+</html>
