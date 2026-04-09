@@ -1,0 +1,9 @@
+{
+  "senin": ["PEM. BERORIENTASI OBYEK", "B. INGGRIS"],
+  "selasa": ["PEMODELAN PERANGKAT LUNAK", "BK", "PEMOGRAMAN MOBILE"],
+  "rabu": ["MTK", "B. INDONESIA", "T. PKK", "PKK"],
+  "kamis": ["PJOK", "PEMOGRAMAN GIM", "AGAMA"],
+  "jumat": ["PEMOGRAMAN WEB", "PANCASILA"],
+  "sabtu": ["Libur"],
+  "minggu": ["Libur"]
+}

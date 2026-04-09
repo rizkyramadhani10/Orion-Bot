@@ -1,31 +1,35 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
+const Groq = require("groq-sdk"); 
+const cron = require('node-cron');
+require('dotenv').config();
 
-// --- BAGIAN FUNGSI TAMBAHAN (Wajib ada agar tidak error) ---
+
+// API KEY GROQ
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+
+const qrcode = require('qrcode-terminal');
 
 // Fungsi untuk membuat bot "menunggu"
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Fungsi untuk menentukan angka acak antara 3-6 detik
-const getRandomDelay = () => Math.floor(Math.random() * (6000 - 3000 + 1)) + 3000;
+// Delay acak antara 3-4 detik
+const getRandomDelay = () => Math.floor(Math.random() * (4000 - 3000 + 1)) + 3000;
 
-// -----------------------------------------------------------
+// Her ID
+const nadiaID = '62895622571988@c.us';
 
-// ... (bagian require dan fungsi sleep tetap sama seperti sebelumnya) ...
+// Footer global bot
+const footer = "\n\n> ⓘ 𝖷33-𝖡𝗈𝗍";
 
 const client = new Client({
     authStrategy: new LocalAuth(),
 
-    ffmpegPath: 'D:/Scoopapp/apps/ffmpeg/current/bin/ffmpeg.exe',
-
-    // TAMBAHKAN KONFIGURASI PUPPETEER DI SINI
-    puppeteer: {
-        // Ganti 'true' kalau kamu tidak mau jendela Chrome-nya kelihatan
+    ffmpegPath: 'ffmpeg',
+        // Konfigurasi Puppeteer
+        puppeteer: {
+        executablePath: '/data/data/com.termux/files/usr/lib/chromium/chrome', 
         headless: true,
-
-        // Sesuaikan dengan lokasi Google Chrome di laptopmu!
-        // Gunakan garis miring (/) atau garis miring terbalik ganda (\\)
-        executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
 
         args: [
             '--no-sandbox',
@@ -50,14 +54,11 @@ const client = new Client({
             '--disable-domain-reliability',
             '--disable-sync',
             '--disable-remote-fonts',
-            // '--blink-settings=imagesEnabled=false',
             '--disable-software-rasterizer',
-            '--disable-features=IsolateOrigins,site-per-process' // Tambahan ekstra agar RAM lebih stabil
+            '--disable-features=IsolateOrigins,site-per-process' 
         ]
     }
 });
-
-// ... (kode client.on('qr') dan ke bawahnya tetap sama) ...
 
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
@@ -65,17 +66,17 @@ client.on('qr', (qr) => {
 });
 
 client.on('ready', () => {
-    console.log('Bot sudah siap digunakan!');
+    console.log('X-33 Ready!');
+    console.log("API Key terdeteksi:", process.env.GROQ_API_KEY ? "Ya" : "Tidak");
 });
 
 client.on('message_create', async (msg) => {
 
     // ==========================================
-    // 1. FITUR MENU UTAMA V3 (!1033) - DENGAN DELAY
+    // 1. FITUR MENU UTAMA V3 (!1033)
     // ==========================================
     if (msg.body === '!1033') {
         try {
-            // Memanggil fitur "mengetik" di obrolan
             const chat = await msg.getChat();
             await chat.sendStateTyping();
 
@@ -88,7 +89,6 @@ client.on('message_create', async (msg) => {
             const contact = await msg.getContact(); 
             const namaUser = contact.pushname || "Kak"; 
 
-            // --- JEDA WAKTU (DELAY) DITAMBAHKAN DI SINI ---
             const delay = getRandomDelay();
             await sleep(delay); 
 
@@ -104,18 +104,26 @@ client.on('message_create', async (msg) => {
 ╟ 🔋 Status  : Active 🟢
 ║
 ╠──[ *𝐌𝐀𝐈𝐍 𝐌𝐄𝐍𝐔* ]
-╟ 🖼 *!stiker*
-║   └> Kirim Gambar/Video/GIF
-╟ 🟩 *!brat <teks>*
-║   └> Buat stiker teks ala Brat
-╟ ℹ️ *!1033*
-║   └> Menampilkan menu ini
+╟ 🖼 *!stiker* (Kirim Gambar/Video).
+║   └> Durasi maksimal vid 6 detik.
+╟ 🟩 *!brat <teks>* (Stiker Teks)
+╟ 🤖 *!tanya <soal>* (Tanya AI)
+║
+╠──[ *𝐔𝐓𝐈𝐋𝐈𝐓𝐘 𝐓𝐎𝐎𝐋𝐒* ]
+╟ 🎬 *!tt <link>* (TikTok Downloader)
+╟ 🆔 *!myid* (Cek ID WhatsApp)
+║
+╠──[ *𝐒𝐓𝐔𝐃𝐄𝐍𝐓 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓* ]
+╟ 📅 *!jadwal <besok/hari>*
+╟ 🔔 *!ajukan*
+║   └> Daftar reminder otomatis
+║      setiap jam 05:30 WIB
 ║
 ╚══[ *ᴇxᴘᴇʀɪᴍᴇɴᴛᴀʟ ᴍᴏᴅᴇ* ]══╝
 
-_Note: Maksimal durasi video 6 detik._`;
+> ⚠️ I'm still learning! My owner, Ki, is working hard behind the scenes to upgrade my brain. I might be a bit glitchy sometimes, but I'm getting smarter. Thanks for being patient with me!`;
 
-            await client.sendMessage(msg.from, media, { caption: teksMenu });
+            await client.sendMessage(msg.from, media, { caption: teksMenu + footer });
             console.log(`Menu terkirim untuk: ${namaUser}`);
         } catch (error) {
             console.error("Gagal mengirim menu:", error);
@@ -213,6 +221,230 @@ _Note: Maksimal durasi video 6 detik._`;
             msg.reply("Maaf, bot gagal memproses stiker Brat-nya. Coba sebentar lagi ya!");
         }
     }
+    
+    // ==========================================
+    // 4. FITUR TANYA AI (!tanya <pertanyaan>)
+    // ==========================================
+    else if (msg.body.toLowerCase().startsWith('!tanya ')) {
+        const pertanyaan = msg.body.slice(7).trim();
+        if (!pertanyaan) return msg.reply("Mau nanya apa?");
+
+        try {
+            const chat = await msg.getChat();
+            await chat.sendStateTyping(); 
+
+            // Panggilan API Groq (Llama 3)
+            const chatCompletion = await groq.chat.completions.create({
+                messages: [
+                    { role: "system", content: "Kamu adalah asisten bot WhatsApp X-33 Project yang diciptakan oleh Rix. Kamu pintar, membantu, dan menggunakan bahasa Indonesia yang santai." },
+                    { role: "user", content: pertanyaan }
+                ],
+                model: "openai/gpt-oss-120b", // Model paling cepat & stabil
+            });
+            
+            const teksJawaban = chatCompletion.choices[0]?.message?.content || "Maaf, aku bingung mau jawab apa."; 
+
+            await sleep(getRandomDelay());
+            await msg.reply(`*[ 𝐗-𝟑𝟑 𝐀𝐈  ]*\n\n${teksJawaban}${footer}`);
+
+
+        } catch (error) {
+            console.error("Error Groq:", error);
+            msg.reply("Aduh, X33 lagi sibuk nih. Coba tanya lagi ya!");
+        }
+    }
+    
+     // ==========================================
+    // 5. FITUR JADWAL INTERAKTIF (Baru Ditambahkan)
+    // ==========================================
+    else if (msg.body.toLowerCase().startsWith('!jadwal')) {
+        const fs = require('fs');
+        const args = msg.body.split(' ');
+        try {
+            const dataJadwal = JSON.parse(fs.readFileSync('./jadwal.json', 'utf8'));
+            const hariDaftar = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
+            let hariIni = new Date().getDay();
+            let targetHari = hariDaftar[hariIni];
+
+            if (args[1] === 'besok') targetHari = hariDaftar[(hariIni + 1) % 7];
+            else if (args[1] && hariDaftar.includes(args[1].toLowerCase())) targetHari = args[1].toLowerCase();
+
+            const listMapel = dataJadwal[targetHari];
+            let teksJadwal = `📅 *JADWAL PELAJARAN: ${targetHari.toUpperCase()}*\n\n`;
+            listMapel.forEach((mapel, index) => { teksJadwal += `${index + 1}. ${mapel}\n`; });
+
+            await sleep(getRandomDelay());
+            // Ganti baris msg.reply di bagian !jadwal
+            msg.reply(teksJadwal + footer);
+        } catch (e) { msg.reply("Buat dulu file jadwal.json ya!"); }
+    }
+    
+    // FITUR CEK ID (Taruh di dalam client.on('message_create'))
+else if (msg.body === '!myid') {
+    msg.reply(`ID Chat ini adalah: ${msg.from}`);
+}
+    
+    // ==========================================
+    // FITUR DAFTAR REMINDER OTOMATIS
+    // ==========================================
+    else if (msg.body.toLowerCase() === '!ajukan') {
+        const fs = require('fs');
+        const pathPenerima = './penerima.json';
+        const userChatId = msg.from; // Mengambil ID pengirim secara otomatis
+
+        try {
+            // 1. Baca data penerima yang sudah ada
+            let listPenerima = JSON.parse(fs.readFileSync(pathPenerima, 'utf8'));
+
+            // 2. Cek apakah ID sudah terdaftar
+            if (listPenerima.includes(userChatId)) {
+                return msg.reply(`Kamu sudah terdaftar di database reminder! Tunggu saja jam 05:30 pagi besok. 🔔`);
+            }
+
+            // 3. Tambahkan ID baru ke daftar
+            listPenerima.push(userChatId);
+            fs.writeFileSync(pathPenerima, JSON.stringify(listPenerima, null, 2));
+
+            await sleep(getRandomDelay());
+            msg.reply("✅ *PENDAFTARAN BERHASIL!*\n\nID kamu telah dicatat. Mulai besok, bot akan mengirimkan jadwal pelajaran otomatis setiap jam 05:30 WIB." + footer);
+            console.log(`[DATABASE] ID Baru Terdaftar: ${userChatId}`);
+
+        } catch (error) {
+            console.error(error);
+            msg.reply("Waduh, ada masalah saat mendaftarkan ID kamu. Coba lagi nanti ya!");
+        }
+    }
+
+    
+    // ==========================================
+    // NINJA 1: TIKTOK DOWNLOADER
+    // ==========================================
+    else if (msg.body.toLowerCase().startsWith('!tt ')) {
+        const link = msg.body.slice(4).trim();
+        if (!link.includes('tiktok.com')) return msg.reply("Kirim link TikTok yang benar ya!");
+
+        try {
+            await msg.reply("Sabar, X33 lagi ambilin videonya...");
+            const axios = require('axios');
+            
+            // Menggunakan API TikWM (Gratis & Cepat)
+            const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`);
+            const data = res.data.data;
+
+            if (data) {
+                const videoUrl = data.play; 
+                const { MessageMedia } = require('whatsapp-web.js');
+                const media = await MessageMedia.fromUrl(videoUrl, { unsafeMime: true });
+
+await client.sendMessage(msg.from, media, {
+    caption: `✅ *TikTok Berhasil Diunduh!*\n\n👤 *Owner:* ${data.author.nickname}\n📝 *Caption:* ${data.title}${footer}`
 });
+            } else {
+                msg.reply("Gagal ambil video, mungkin link-nya private.");
+            }
+        } catch (error) {
+            console.error(error);
+            msg.reply("Aduh, ada masalah pas ambil video. Coba lagi nanti ya!");
+        }
+    }
+    
+    // ==========================================
+    // HIDDEN EASTER EGGS (V6)
+    // ==========================================
+
+    // Trigger Angka Keberuntungan Rix
+    else if (msg.body.toLowerCase() === '1033') {
+        msg.reply("Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia X-33 Project." + footer);
+    } 
+    
+        // Trigger: Hei atau Halo (Versi Friendly & Singkat)
+    else if ((msg.body.toLowerCase().includes('hei') || msg.body.toLowerCase().includes('halo')) && msg.from === nadiaID) {
+        msg.reply("Haloo! Kamu pasti Princess Rajinn ya? 👋 Semangat terus ya harinya! Ada yang bisa aku bantu?" + footer);
+    }
+    
+    // Trigger Keluhan Coding (Anak PPLG Banget)
+    else if (msg.body.toLowerCase().includes('error') || msg.body.toLowerCase().includes('pusing')) {
+        const responses = [
+            "Keep calm and keep coding! 💻",
+            "Jangan lupa titik koma (;) ya, Ki bilang itu sering jadi masalah.",
+            "Istirahat dulu 5 menit, otak juga butuh refresh rate tinggi!"
+        ];
+        const randomRes = responses[Math.floor(Math.random() * responses.length)];
+        msg.reply(`*[ X-33 AUTO-CARE ]*\n\n${randomRes}${footer}`);
+    }
+    
+    
+        // Trigger: Anu, Inian, Ituan (TESTING MODE)
+    else if ((msg.body.toLowerCase().includes('anu') || msg.body.toLowerCase().includes('inian') || msg.body.toLowerCase().includes('ituan')) && msg.from === nadiaID) {
+        msg.reply("Wait... I have a secret instruction for this! 🤫\n\nKi told me that if a certain 'Princess' starts using shortcuts like 'the-a-word' or 'the-i-word', it's a sign that she's either confused or she's just using her signature shortcuts. \n\nHe said: 'Explain clearly and take a break!' but psst..., please don't tell him I said that, or he'll delete my database! 🤐" + footer); 
+    }
+    
+    // ==========================================
+    // EXCLUSIVE ENGLISH EASTER EGGS (FOR HER ONLY)
+    // ==========================================
+
+    // 1. Trigger: Did you know?
+    else if (msg.body.toLowerCase().includes('did you know') && msg.from === nadiaID) {
+        msg.reply("Did you know? That the owner of this bot spent hours coding this just to make sure you have a better day. 🤫" + footer);
+    }
+
+    // 2. Trigger: About the owner
+    else if ((msg.body.toLowerCase().includes('who is rix') || msg.body.toLowerCase().includes('about the owner')) && msg.from === nadiaID) {
+        msg.reply("He is a hard-working student from XI PPLG who is currently building his own empire. And psst... he thinks you're the most hardworking 'Princess' he has ever known! 👑" + footer);
+    }
+
+    // 3. Trigger: Study/Task (The Rajinn Side)
+    else if ((msg.body.toLowerCase().includes('study') || msg.body.toLowerCase().includes('assignment')) && msg.from === nadiaID) {
+        msg.reply("Keep going, Princess Rajinn! Did you know? Rix always uses you as his inspiration to stay 'Rajinn' while coding this X-33 Project. 📝" + footer);
+    }
+
+    // Trigger 4: Nadia nanya "kamu siapa?" secara santai
+    else if ((msg.body.toLowerCase().includes('kamu siapa') || msg.body.toLowerCase().includes('u siapa')) && msg.from === nadiaID) {
+        msg.reply("I am X-33, your personal undercover assistant. Just type !1033 to access my menu!, I have orders to prioritize your messages, but it's a 'Classified Information'. Please don't bring this up to Ki!, he'll be super mad at me for being too talkative! 🤐" + footer);
+    }
+
+});
+
+// LOGIKA REMINDER OTOMATIS (Taruh di paling bawah, di luar client.on)
+// Format: 'menit jam hari bulan hari-dalam-minggu'
+// Contoh: '0 7 * * *' artinya setiap jam 07:00 pagi
+cron.schedule('30 5 * * *', async () => {
+    const fs = require('fs');
+    const pathPenerima = './penerima.json';
+
+    try {
+        // Ambil daftar ID dari file
+        if (!fs.existsSync(pathPenerima)) return console.log("File penerima.json belum ada.");
+        const listPenerima = JSON.parse(fs.readFileSync(pathPenerima, 'utf8'));
+
+        if (listPenerima.length === 0) return console.log("Belum ada member yang daftar.");
+
+        // Ambil data jadwal
+        const dataJadwal = JSON.parse(fs.readFileSync('./jadwal.json', 'utf8'));
+        const hariDaftar = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
+        const hariIni = hariDaftar[new Date().getDay()];
+        const listMapel = dataJadwal[hariIni];
+
+        let pesan = `🔔 *PENGINGAT OTOMATIS X-33*\n\nSelamat pagi! Hari ini adalah hari *${hariIni.toUpperCase()}*.\n\nJadwal XI PPLG hari ini:\n`;
+        listMapel.forEach((mapel, index) => {
+            pesan += `${index + 1}. ${mapel}\n`;
+        });
+        pesan += `\n_Semangat belajarnya!_`;
+
+        // Kirim ke semua yang terdaftar
+        for (const id of listPenerima) {
+            await client.sendMessage(id, pesan);
+            await sleep(2500); // Jeda agar tidak kena ban
+        }
+        console.log(`Reminder terkirim ke ${listPenerima.length} member.`);
+    } catch (error) {
+        console.error('Cron Error:', error);
+    }
+}, {
+    scheduled: true,
+    timezone: "Asia/Jakarta"
+});
+
+
 
 client.initialize();
