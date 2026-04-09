@@ -1,5 +1,5 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
-const Groq = require("groq-sdk"); 
+const Groq = require("groq-sdk");
 const cron = require('node-cron');
 require('dotenv').config();
 
@@ -26,9 +26,9 @@ const client = new Client({
     authStrategy: new LocalAuth(),
 
     ffmpegPath: 'ffmpeg',
-        // Konfigurasi Puppeteer
-        puppeteer: {
-        executablePath: '/data/data/com.termux/files/usr/lib/chromium/chrome', 
+    // Konfigurasi Puppeteer
+    puppeteer: {
+        executablePath: '/data/data/com.termux/files/usr/lib/chromium/chrome',
         headless: true,
 
         args: [
@@ -55,7 +55,7 @@ const client = new Client({
             '--disable-sync',
             '--disable-remote-fonts',
             '--disable-software-rasterizer',
-            '--disable-features=IsolateOrigins,site-per-process' 
+            '--disable-features=IsolateOrigins,site-per-process'
         ]
     }
 });
@@ -86,11 +86,11 @@ client.on('message_create', async (msg) => {
             else if (jam >= 11 && jam < 15) sapaan = "Selamat siang!";
             else if (jam >= 15 && jam < 18) sapaan = "Selamat sore!";
 
-            const contact = await msg.getContact(); 
-            const namaUser = contact.pushname || "Kak"; 
+            const contact = await msg.getContact();
+            const namaUser = contact.pushname || "Kak";
 
             const delay = getRandomDelay();
-            await sleep(delay); 
+            await sleep(delay);
 
             const { MessageMedia } = require('whatsapp-web.js');
             const media = MessageMedia.fromFilePath('./banner.png');
@@ -172,7 +172,7 @@ client.on('message_create', async (msg) => {
     // ==========================================
     else if (msg.body.toLowerCase().startsWith('!brat ')) {
         const teksBrat = msg.body.slice(6).trim();
-        
+
         if (!teksBrat) return msg.reply("Kasih teksnya dong!!");
         if (teksBrat.length > 250) return msg.reply("Teksnya kepanjangan! Maksimal 250 karakter yaa");
 
@@ -182,12 +182,12 @@ client.on('message_create', async (msg) => {
 
             const browser = client.pupBrowser;
             const page = await browser.newPage();
-            
+
             await page.setViewport({ width: 600, height: 600 });
 
             const path = require('path');
             const fileUrl = `file://${path.resolve(__dirname, 'brat.html')}`;
-            await page.goto(fileUrl, { waitUntil: 'networkidle0' }); 
+            await page.goto(fileUrl, { waitUntil: 'networkidle0' });
 
             await page.evaluate((teks) => {
                 document.getElementById('brat-text').innerText = teks;
@@ -198,8 +198,8 @@ client.on('message_create', async (msg) => {
 
             const element = await page.$('#output');
             const screenshotBase64 = await element.screenshot({ encoding: 'base64' });
-            
-            await page.close(); 
+
+            await page.close();
 
             const { MessageMedia } = require('whatsapp-web.js');
             const media = new MessageMedia('image/png', screenshotBase64);
@@ -221,7 +221,7 @@ client.on('message_create', async (msg) => {
             msg.reply("Maaf, bot gagal memproses stiker Brat-nya. Coba sebentar lagi ya!");
         }
     }
-    
+
     // ==========================================
     // 4. FITUR TANYA AI (!tanya <pertanyaan>)
     // ==========================================
@@ -231,7 +231,7 @@ client.on('message_create', async (msg) => {
 
         try {
             const chat = await msg.getChat();
-            await chat.sendStateTyping(); 
+            await chat.sendStateTyping();
 
             // Panggilan API Groq (Llama 3)
             const chatCompletion = await groq.chat.completions.create({
@@ -241,8 +241,8 @@ client.on('message_create', async (msg) => {
                 ],
                 model: "openai/gpt-oss-120b", // Model paling cepat & stabil
             });
-            
-            const teksJawaban = chatCompletion.choices[0]?.message?.content || "Maaf, aku bingung mau jawab apa."; 
+
+            const teksJawaban = chatCompletion.choices[0]?.message?.content || "Maaf, aku bingung mau jawab apa.";
 
             await sleep(getRandomDelay());
             await msg.reply(`*[ 𝐗-𝟑𝟑 𝐀𝐈  ]*\n\n${teksJawaban}${footer}`);
@@ -253,8 +253,8 @@ client.on('message_create', async (msg) => {
             msg.reply("Aduh, X33 lagi sibuk nih. Coba tanya lagi ya!");
         }
     }
-    
-     // ==========================================
+
+    // ==========================================
     // 5. FITUR JADWAL INTERAKTIF (Baru Ditambahkan)
     // ==========================================
     else if (msg.body.toLowerCase().startsWith('!jadwal')) {
@@ -278,12 +278,12 @@ client.on('message_create', async (msg) => {
             msg.reply(teksJadwal + footer);
         } catch (e) { msg.reply("Buat dulu file jadwal.json ya!"); }
     }
-    
+
     // FITUR CEK ID (Taruh di dalam client.on('message_create'))
-else if (msg.body === '!myid') {
-    msg.reply(`ID Chat ini adalah: ${msg.from}`);
-}
-    
+    else if (msg.body === '!myid') {
+        msg.reply(`ID Chat ini adalah: ${msg.from}`);
+    }
+
     // ==========================================
     // FITUR DAFTAR REMINDER OTOMATIS
     // ==========================================
@@ -315,7 +315,7 @@ else if (msg.body === '!myid') {
         }
     }
 
-    
+
     // ==========================================
     // NINJA 1: TIKTOK DOWNLOADER
     // ==========================================
@@ -326,19 +326,19 @@ else if (msg.body === '!myid') {
         try {
             await msg.reply("Sabar, X33 lagi ambilin videonya...");
             const axios = require('axios');
-            
+
             // Menggunakan API TikWM (Gratis & Cepat)
             const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`);
             const data = res.data.data;
 
             if (data) {
-                const videoUrl = data.play; 
+                const videoUrl = data.play;
                 const { MessageMedia } = require('whatsapp-web.js');
                 const media = await MessageMedia.fromUrl(videoUrl, { unsafeMime: true });
 
-await client.sendMessage(msg.from, media, {
-    caption: `✅ *TikTok Berhasil Diunduh!*\n\n👤 *Owner:* ${data.author.nickname}\n📝 *Caption:* ${data.title}${footer}`
-});
+                await client.sendMessage(msg.from, media, {
+                    caption: `✅ *TikTok Berhasil Diunduh!*\n\n👤 *Owner:* ${data.author.nickname}\n📝 *Caption:* ${data.title}${footer}`
+                });
             } else {
                 msg.reply("Gagal ambil video, mungkin link-nya private.");
             }
@@ -347,7 +347,7 @@ await client.sendMessage(msg.from, media, {
             msg.reply("Aduh, ada masalah pas ambil video. Coba lagi nanti ya!");
         }
     }
-    
+
     // ==========================================
     // HIDDEN EASTER EGGS (V6)
     // ==========================================
@@ -355,13 +355,13 @@ await client.sendMessage(msg.from, media, {
     // Trigger Angka Keberuntungan Rix
     else if (msg.body.toLowerCase() === '1033') {
         msg.reply("Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia X-33 Project." + footer);
-    } 
-    
-        // Trigger: Hei atau Halo (Versi Friendly & Singkat)
+    }
+
+    // Trigger: Hei atau Halo (Versi Friendly & Singkat)
     else if ((msg.body.toLowerCase().includes('hei') || msg.body.toLowerCase().includes('halo')) && msg.from === nadiaID) {
         msg.reply("Haloo! Kamu pasti Princess Rajinn ya? 👋 Semangat terus ya harinya! Ada yang bisa aku bantu?" + footer);
     }
-    
+
     // Trigger Keluhan Coding (Anak PPLG Banget)
     else if (msg.body.toLowerCase().includes('error') || msg.body.toLowerCase().includes('pusing')) {
         const responses = [
@@ -372,13 +372,13 @@ await client.sendMessage(msg.from, media, {
         const randomRes = responses[Math.floor(Math.random() * responses.length)];
         msg.reply(`*[ X-33 AUTO-CARE ]*\n\n${randomRes}${footer}`);
     }
-    
-    
-        // Trigger: Anu, Inian, Ituan (TESTING MODE)
+
+
+    // Trigger: Anu, Inian, Ituan (TESTING MODE)
     else if ((msg.body.toLowerCase().includes('anu') || msg.body.toLowerCase().includes('inian') || msg.body.toLowerCase().includes('ituan')) && msg.from === nadiaID) {
-        msg.reply("Wait... I have a secret instruction for this! 🤫\n\nKi told me that if a certain 'Princess' starts using shortcuts like 'the-a-word' or 'the-i-word', it's a sign that she's either confused or she's just using her signature shortcuts. \n\nHe said: 'Explain clearly and take a break!' but psst..., please don't tell him I said that, or he'll delete my database! 🤐" + footer); 
+        msg.reply("Wait... I have a secret instruction for this! 🤫\n\nKi told me that if a certain 'Princess' starts using shortcuts like 'the-a-word' or 'the-i-word', it's a sign that she's either confused or she's just using her signature shortcuts. \n\nHe said: 'Explain clearly and take a break!' but psst..., please don't tell him I said that, or he'll delete my database! 🤐" + footer);
     }
-    
+
     // ==========================================
     // EXCLUSIVE ENGLISH EASTER EGGS (FOR HER ONLY)
     // ==========================================
