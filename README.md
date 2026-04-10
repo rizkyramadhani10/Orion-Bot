@@ -7,7 +7,6 @@
 - [Description](#description)
 - [Tech Stack](#tech-stack)
 - [Quick Start](#quick-start)
-- [Key Dependencies](#key-dependencies)
 - [Run Commands](#run-commands)
 - [Screenshots](#screenshots)
 - [Project Structure](#project-structure)
@@ -36,19 +35,6 @@ npm install
 
 # Start development server
 npm run start
-```
-
-## 📦 Key Dependencies
-
-```
-@google/genai: ^1.48.0
-axios: ^1.14.0
-dotenv: ^17.4.1
-groq-sdk: ^1.1.2
-node-cron: ^4.2.1
-qrcode-terminal: ^0.12.0
-tesseract.js: ^7.0.0
-whatsapp-web.js: ^1.34.6
 ```
 
 ## 🚀 Run Commands
