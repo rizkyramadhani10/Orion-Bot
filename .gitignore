@@ -9,3 +9,6 @@ node_modules/
 her_memory.json
 last_greeting.json
 jadwal.json
+
+# File Rahasia
+.env

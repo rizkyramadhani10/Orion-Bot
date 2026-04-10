@@ -7,6 +7,8 @@ const fsp = require('fs/promises');
 const path = require('path');
 const axios = require('axios');
 const youtubedl = require('youtube-dl-exec');
+const os = require('os');
+const platform = os.platform(); // Akan menghasilkan 'win32' di laptop, dan 'android' di Termux
 require('dotenv').config();
 
 // API KEY GROQ
@@ -112,10 +114,10 @@ const savePenerima = async (listPenerima) => {
 const client = new Client({
     authStrategy: new LocalAuth(),
 
-    ffmpegPath: FFMPEG_PATH,
+    ffmpegPath: platform === 'android' ? '/data/data/com.termux/files/usr/bin/ffmpeg' : FFMPEG_PATH,
     puppeteer: {
-        executablePath: CHROME_PATH,
         headless: true,
+        executablePath: platform === 'android' ? '/data/data/com.termux/files/usr/bin/chromium-browser' : CHROME_PATH,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
