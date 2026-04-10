@@ -1,6 +1,7 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const Groq = require("groq-sdk");
 const cron = require('node-cron');
+const Tesseract = require('tesseract.js');
 require('dotenv').config();
 
 
@@ -25,10 +26,10 @@ const footer = "\n\n> ⓘ 𝖷33-𝖡𝗈𝗍";
 const client = new Client({
     authStrategy: new LocalAuth(),
 
-    ffmpegPath: 'ffmpeg',
+    ffmpegPath: 'D:/Scoopapp/apps/ffmpeg/current/bin/ffmpeg.exe',
     // Konfigurasi Puppeteer
     puppeteer: {
-        executablePath: '/data/data/com.termux/files/usr/lib/chromium/chrome',
+        executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
         headless: true,
 
         args: [
@@ -104,20 +105,25 @@ client.on('message_create', async (msg) => {
 ╟ 🔋 Status  : Active 🟢
 ║
 ╠──[ *𝐌𝐀𝐈𝐍 𝐌𝐄𝐍𝐔* ]
-╟ 🖼 *!stiker* (Kirim Gambar/Video).
-║   └> Durasi maksimal vid 6 detik.
+╟ 🖼 *!stiker* (Kirim Gambar/Video)
 ╟ 🟩 *!brat <teks>* (Stiker Teks)
-╟ 🤖 *!tanya <soal>* (Tanya AI)
+╟ 🤖 *!tanya <soal>* (Diskusi AI)
 ║
-╠──[ *𝐔𝐓𝐈𝐋𝐈𝐓𝐘 𝐓𝐎𝐎𝐋𝐒* ]
-╟ 🎬 *!tt <link>* (TikTok Downloader)
-╟ 🆔 *!myid* (Cek ID WhatsApp)
+╠──[ *𝐌𝐄𝐃𝐈𝐀 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑* ]
+╟ 🎬 *!tt <link>* (TikTok Video)
+╟ 🎵 *!ttmp3 <link>* (TikTok Audio)
+╟ 🎧 *!ytmp3 <link>* (YouTube Audio)
+╟ 📻 *!fbmp3 <link>* (Facebook Audio)
 ║
 ╠──[ *𝐒𝐓𝐔𝐃𝐄𝐍𝐓 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓* ]
 ╟ 📅 *!jadwal <besok/hari>*
-╟ 🔔 *!ajukan*
-║   └> Daftar reminder otomatis
-║      setiap jam 05:30 WIB
+╟ 🔔 *!ajukan* (Auto-Reminder)
+╟ 📝 *!sum* (AI Task Summarizer/OCR)
+║   └> Kirim foto tugas dengan 
+║      caption !sum untuk rangkum
+║
+╠──[ *𝐔𝐓𝐈𝐋𝐈𝐓𝐘 𝐓𝐎𝐎𝐋𝐒* ]
+╟ 🆔 *!myid* (Cek ID WhatsApp)
 ║
 ╚══[ *ᴇxᴘᴇʀɪᴍᴇɴᴛᴀʟ ᴍᴏᴅᴇ* ]══╝
 
@@ -317,34 +323,114 @@ client.on('message_create', async (msg) => {
 
 
     // ==========================================
-    // NINJA 1: TIKTOK DOWNLOADER
+    // FITUR AI TASK SUMMARIZER (OCR + AI)
     // ==========================================
-    else if (msg.body.toLowerCase().startsWith('!tt ')) {
-        const link = msg.body.slice(4).trim();
-        if (!link.includes('tiktok.com')) return msg.reply("Kirim link TikTok yang benar ya!");
+    else if (msg.hasMedia && msg.body.toLowerCase().startsWith('!sum')) {
+        try {
+            const chat = await msg.getChat();
+            await chat.sendStateTyping();
+            
+            await msg.reply("Sedang membaca teks dari gambar, mohon tunggu... ⏳");
+
+            // Download media
+            const media = await msg.downloadMedia();
+            const imageBuffer = Buffer.from(media.data, 'base64');
+
+            // Proses OCR menggunakan Tesseract
+            const { data: { text } } = await Tesseract.recognize(imageBuffer, 'ind+eng', {
+                logger: m => console.log(m)
+            });
+
+            if (!text || text.trim().length < 10) {
+                return msg.reply("Maaf, bot tidak bisa mendeteksi teks yang jelas di gambar tersebut.");
+            }
+
+            // Kirim teks hasil OCR ke Groq AI untuk dirangkum
+            const chatCompletion = await groq.chat.completions.create({
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "Kamu adalah asisten pengolah tugas. Berikut adalah teks hasil scan OCR dari sebuah gambar tugas atau catatan. Tolong rangkum poin-poin pentingnya dengan jelas dan mudah dipahami dalam bahasa Indonesia." 
+                    },
+                    { role: "user", content: `Teks hasil scan: ${text}` }
+                ],
+                model: "openai/gpt-oss-120b", 
+            });
+
+            const ringkasan = chatCompletion.choices[0]?.message?.content || "Gagal membuat ringkasan.";
+
+            await sleep(getRandomDelay());
+            await msg.reply(`📝 *HASIL RANGKUMAN TUGAS*\n\n${ringkasan}${footer}`);
+
+            console.log("[SUKSES] OCR & Summarize berhasil dijalankan.");
+
+        } catch (error) {
+            console.error("Error OCR/Summarizer:", error);
+            msg.reply("Terjadi kesalahan saat memproses gambar atau merangkum teks.");
+        }
+    }
+
+    else if (msg.body.toLowerCase().startsWith('!ttmp3 ')) {
+        const link = msg.body.slice(7).trim();
+        if (!link.includes('tiktok.com')) return msg.reply("Kirim link TikTok yang bener ya!");
 
         try {
-            await msg.reply("Sabar, X33 lagi ambilin videonya...");
+            await msg.reply("Sabar, X33 lagi ambilin audionya...");
             const axios = require('axios');
-
-            // Menggunakan API TikWM (Gratis & Cepat)
             const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`);
             const data = res.data.data;
 
-            if (data) {
-                const videoUrl = data.play;
+            if (data && data.music) {
+                const audioUrl = data.music; 
                 const { MessageMedia } = require('whatsapp-web.js');
-                const media = await MessageMedia.fromUrl(videoUrl, { unsafeMime: true });
+                const media = await MessageMedia.fromUrl(audioUrl, { unsafeMime: true });
 
                 await client.sendMessage(msg.from, media, {
-                    caption: `✅ *TikTok Berhasil Diunduh!*\n\n👤 *Owner:* ${data.author.nickname}\n📝 *Caption:* ${data.title}${footer}`
+                    sendAudioAsVoice: false, // Kirim sebagai file audio, bukan Voice Note
+                    caption: `✅ *TikTok MP3 Berhasil!* \n🎵 *Judul:* ${data.music_info.title}${footer}`
                 });
             } else {
-                msg.reply("Gagal ambil video, mungkin link-nya private.");
+                msg.reply("Gagal ambil audio, mungkin link-nya private.");
             }
         } catch (error) {
             console.error(error);
-            msg.reply("Aduh, ada masalah pas ambil video. Coba lagi nanti ya!");
+            msg.reply("Aduh, ada masalah pas ambil audio TikTok.");
+        }
+    }
+
+    // ==========================================
+    // FITUR YOUTUBE MP3 (Siputzx API Gratis)
+    // ==========================================
+    else if (msg.body.toLowerCase().startsWith('!ytmp3 ')) {
+        const link = msg.body.slice(7).trim();
+        if (!link.includes('youtu')) return msg.reply("Kirim link YouTube yang bener ya!");
+
+        try {
+            await msg.reply("Sedang memproses audio YouTube, sabar ya... ⏳");
+            const axios = require('axios');
+
+            // Memanggil API Gratis dari komunitas Bot WA Indo
+            const response = await axios.get(`https://api.siputzx.my.id/api/d/ytmp3?url=${link}`);
+
+            // Cek apakah response sukses dan link download tersedia
+            if (response.data && response.data.status === true && response.data.data.dl) {
+                const audioUrl = response.data.data.dl;
+                const judul = response.data.data.title;
+                const { MessageMedia } = require('whatsapp-web.js');
+                
+                // Proses download audio
+                const media = await MessageMedia.fromUrl(audioUrl, { unsafeMime: true });
+
+                await client.sendMessage(msg.from, media, {
+                    sendAudioAsVoice: false, // false = kirim sebagai musik/lagu, true = Voice Note
+                    caption: `✅ *Download Berhasil!*\n🎵 *Judul:* ${judul}\n\n> ⓘ 𝖷33-𝖡𝗈𝗍`
+                });
+            } else {
+                msg.reply("Gagal mengambil audio. Mungkin videonya terlalu panjang atau link-nya diprivat.");
+            }
+        } catch (error) {
+            console.error("YTmp3 API Error:", error.message);
+            msg.reply("Maaf, server downloader sedang sibuk. Coba lagi nanti ya!");
         }
     }
 
