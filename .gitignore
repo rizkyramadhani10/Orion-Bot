@@ -12,3 +12,17 @@ jadwal.json
 
 # File Rahasia
 .env
+
+# File Json
+cookies.txt
+cookies.json
+chunks.json
+penerima.json
+jadwal.json
+
+# Trained Data
+eng.traineddata
+ind.traineddata
+# Database Sederhana
+penerima.json
+jadwal.json

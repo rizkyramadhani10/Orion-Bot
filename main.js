@@ -45,7 +45,9 @@ const replyWithDelay = async (msg, content) => {
     try {
         const chat = await msg.getChat();
         await chat.sendStateTyping(); // Otomatis memunculkan status "mengetik..."
-    } catch (error) { } // Abaikan jika gagal
+    } catch (error) {
+        console.error("[SYSTEM] Gagal mengirim status typing:", error.message);
+    } // Abaikan jika gagal
 
     await sleep(getRandomDelay());
     return await msg.reply(content);
@@ -55,14 +57,13 @@ const replyWithDelay = async (msg, content) => {
 const nadiaID = '62895622571988@c.us';
 
 // Footer global bot
-const footer = "\n\n> ⓘ 𝖷33-𝖡𝗈𝗍";
+const footer = "\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍";
 
 const GREETING_PATH = path.join(__dirname, 'last_greeting.json');
 const OWNER_ID = process.env.OWNER_ID || '6289602160689@c.us';
 const CHROME_PATH = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const FFMPEG_PATH = process.env.FFMPEG_PATH || 'D:/Scoopapp/apps/ffmpeg/current/bin/ffmpeg.exe';
 const FFMPEG_DIR = path.dirname(FFMPEG_PATH);
-const BANNER_PATH = path.join(__dirname, 'banner.png');
 const JADWAL_PATH = path.join(__dirname, 'jadwal.json');
 const PENERIMA_PATH = path.join(__dirname, 'penerima.json');
 
@@ -169,7 +170,7 @@ client.on('qr', (qr) => {
 });
 
 client.on('ready', () => {
-    console.log('X-33 Ready!');
+    console.log('Orion Ready!');
     console.log("API Key terdeteksi:", process.env.GROQ_API_KEY ? "Ya" : "Tidak");
 
     const nodeMajor = Number(process.versions.node.split('.')[0]);
@@ -195,15 +196,15 @@ client.on('message_create', async (msg) => {
     // Hapus baris ini kalau kamu lagi mau ngetes fitur bot sendiri
     // if (msg.fromMe) return;
 
-    if (msg.body.includes('𝖷33-𝖡𝗈𝗍') || msg.body.includes('𝖷33-𝖢𝗁𝖺𝗍')) return;
+    if (typeof msg.body === 'string' && (msg.body.includes('𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍') || msg.body.includes('𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍'))) return;
 
     // 3. Pastikan pesan ada isinya dan berupa teks
-    if (!msg.body || msg.type !== 'chat') return;
+    if (!msg.body || !['chat', 'image', 'video', 'gif'].includes(msg.type)) return;
 
     // 4. (Opsional) Abaikan grup jika kamu mau bot ini privat buat Nadia & kamu saja
     if (msg.isGroupMsg) return;
 
-    const body = (msg.body || '').trim();
+    const body = (typeof msg.body === 'string' ? msg.body : '').trim();
     const bodyLower = body.toLowerCase();
 
     // ==========================================
@@ -227,49 +228,56 @@ client.on('message_create', async (msg) => {
             const delay = getRandomDelay();
             await sleep(delay);
 
-            const media = MessageMedia.fromFilePath(BANNER_PATH);
+            const teksMenu = `. * ✦ . * . ✦ . * . * ✦ . * . ✦ . * .
 
-            const teksMenu = `╔═══[ *𝐗-𝟑𝟑 𝐏𝐑𝐎𝐉𝐄𝐂𝐓* ]═══╗
-║
-╠ ${sapaan}, ${namaUser}!
-║
-╠──[ *𝐒𝐓𝐀𝐓𝐔𝐒 𝐁𝐎𝐓* ]
-╟ 👤 Creator : Rix (Ki)
-╟ 🔋 Status  : Active 🟢
-║
-╠──[ *𝐌𝐀𝐈𝐍 𝐌𝐄𝐍𝐔* ]
-╟ 🖼 *!stiker* (Kirim Gambar/Video)
-╟ 🟩 *!brat <teks>* (Stiker Teks)
-╟ 🤖 *!tanya <soal>* (Diskusi AI)
-╟ 🎙️ *!vn <teks>* (Text-to-Speech)
-║
-╠──[ *𝐌𝐄𝐃𝐈𝐀 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑* ]
-╟ 🎬 *!tt <link>* (TikTok Video)
-╟ 🎵 *!ttmp3 <link>* (TikTok Audio)
-╟ 🎧 *!ytmp3 <link>* (YouTube Audio)
-╟ 📻 *!fbmp3 <link>* (Facebook Audio)
-╟ 📸 *!ig <link>* (Instagram DL)
-╟ ☁️ *!soundcloud <judul>* (Music)
-╟ 🚀 *!dl <link>* (Universal DL)
-║
-╠──[ *𝐒𝐓𝐔𝐃𝐄𝐍𝐓 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓* ]
-╟ 📅 *!jadwal <besok/hari>*
-╟ 🔔 *!ajukan* (Auto-Reminder)
-╟ 📝 *!sum* (AI Task Summarizer/OCR)
-║   └> Kirim foto tugas + !sum
-║
-╠──[ *𝐔𝐓𝐈𝐋𝐈𝐓𝐘 𝐓𝐎𝐎𝐋𝐒* ]
-╟ 🆔 *!myid* (Cek ID WhatsApp)
-╟ 💤 *!deactivate* (Owner Only)
-║
-╚══[ *ᴇxᴘᴇʀɪᴍᴇɴᴛᴀʟ ᴍᴏᴅᴇ* ]══╝
+█▀█ █▀█ █ █▀█ █▄ █
+█▄█ █▀▄ █ █▄█ █ ▀█
 
-> ⚠️ I'm still learning! My owner, Ki, is working hard behind the scenes to upgrade my brain. I might be a bit glitchy sometimes, but I'm getting smarter. Thanks for being patient with me!`;
-            await client.sendMessage(msg.from, media, { caption: teksMenu + footer });
+. * ✦ . * . ✦ . * . * ✦ . * . ✦ . * .
+
+\${sapaan}, \${namaUser}! 🌟
+
+
+╭─────〔 🌠 𝐒𝐘𝐒𝐓𝐄𝐌 𝐈𝐍𝐅𝐎 〕── . *
+│ 💫 Creator : Rix . +
+│ 📡 Status  : Online [Active] * .
+╰─────────────────── . * . * .
+
+╭─────〔 💫 𝐂𝐎𝐑𝐄 𝐅𝐄𝐀𝐓𝐔𝐑𝐄𝐒 〕── . *
+│ ✨ *!stiker* . * + .
+│ ✨ *!brat* <teks> ✦ . *
+│ ✨ *!tanya* <soal> . + .
+│ ✨ *!vn* <teks> * . ✦ *
+╰─────────────────── . * . * .
+
+╭─────〔 ☄️ 𝐌𝐄𝐃𝐈𝐀 𝐑𝐄𝐓𝐑𝐈𝐄𝐕𝐄𝐑 〕── . *
+│ 🌌 *!tt* / *!ttmp3* . * .
+│ 🌌 *!ig* <link> + . ✦ *
+│ 🌌 *!ytmp3* <link> . * .
+│ 🌌 *!fbmp3* <link> * . +
+│ 🌌 *!soundcloud* . ✦ .
+╰──────────────────────── . * . * .
+
+╭─────〔 🪐 𝐒𝐓𝐔𝐃𝐄𝐍𝐓 𝐒𝐔𝐈𝐓𝐄 〕── . *
+│ 🔭 *!jadwal* * . + . *
+│ 🔭 *!ajukan* . ✦ . * .
+│ 📚 *!sum*(Rangkum) * . +
+╰───────────────────── . * . * . * . * .
+
+╭─────〔 🛰️ 𝐔𝐓𝐈𝐋𝐈𝐓𝐘 〕── . *
+│ 🛠️ *!myid* . * . ✦ .
+│ 🛠️ *!deactivate* + . *
+╰────────────────────── . * . * .
+
+. * ✦ . * . ✦ . * . * ✦ . * . ✦ . * .
+
+> 🌠 Orion is still evolving! My owner, Ki, is calibrating my systems among the stars. I might have some solar flares (glitches) occasionally, but I'm getting brighter. Thanks for navigating with me!`;
+
+            await client.sendMessage(msg.from, teksMenu + footer);
             console.log(`Menu terkirim untuk: ${namaUser}`);
         } catch (error) {
             console.error("Gagal mengirim menu:", error);
-            const fallbackTeks = `*[ 𝐗-𝟑𝟑 𝐏𝐑𝐎𝐉𝐄𝐂𝐓 ]*\n\n${namaUser}, terjadi kesalahan saat memuat gambar menu.`;
+            const fallbackTeks = `*[ 𝐎𝐑𝐈𝐎𝐍 𝐏𝐑𝐎𝐉𝐄𝐂𝐓 ]*\n\n${namaUser}, terjadi kesalahan saat memuat gambar menu.`;
             await sleep(getRandomDelay());
             await client.sendMessage(msg.from, fallbackTeks);
         }
@@ -296,7 +304,7 @@ client.on('message_create', async (msg) => {
             await client.sendMessage(msg.from, media, {
                 sendMediaAsSticker: true,
                 stickerName: "Standard Style",
-                stickerAuthor: "X-33 Project"
+                stickerAuthor: "Orion Project"
             });
             console.log("Stiker berhasil terkirim!");
         } catch (error) {
@@ -340,7 +348,7 @@ client.on('message_create', async (msg) => {
             await client.sendMessage(msg.from, media, {
                 sendMediaAsSticker: true,
                 stickerName: "Brat Style",
-                stickerAuthor: "X-33 Project"
+                stickerAuthor: "Orion Project"
             });
             console.log(`[SUKSES] Stiker Brat: "${teksBrat}" terkirim!`);
 
@@ -363,127 +371,60 @@ client.on('message_create', async (msg) => {
 
             const chatCompletion = await groq.chat.completions.create({
                 messages: [
-                    { role: "system", content: "Kamu adalah asisten bot WhatsApp X-33 Project yang diciptakan oleh Rix. Kamu pintar, membantu, dan menggunakan bahasa Indonesia yang santai." },
+                    { role: "system", content: "Kamu adalah asisten bot WhatsApp Orion Project yang diciptakan oleh Ki. Kamu pintar, membantu, dan menggunakan bahasa Indonesia yang santai." },
                     { role: "user", content: pertanyaan }
                 ],
                 model: "openai/gpt-oss-120b",
             });
 
             const teksJawaban = chatCompletion.choices[0]?.message?.content || "Maaf, aku bingung mau jawab apa.";
-            await replyWithDelay(msg, `*[ 𝐗-𝟑𝟑 𝐀𝐈  ]*\n\n${teksJawaban}${footer}`);
+            await replyWithDelay(msg, `*[ 𝐎𝐑𝐈𝐎𝐍 𝐀𝐈  ]*\n\n${teksJawaban}${footer}`);
+            console.log(`[SUKSES] Jawaban AI terkirim ke ${msg.from}`);
 
         } catch (error) {
             console.error("Error Groq:", error);
-            await replyWithDelay(msg, "Aduh, X33 lagi sibuk nih. Coba tanya lagi ya!");
+            await replyWithDelay(msg, "Aduh, Orion lagi sibuk nih. Coba tanya lagi ya!");
         }
     }
 
     // ==========================================
-    // 5. FITUR JADWAL INTERAKTIF
+    // FITUR TEXT TO SPEECH / VOICE NOTE (!vn)
     // ==========================================
-    else if (bodyLower.startsWith('!jadwal')) {
-        const args = body.split(' ');
-        try {
-            const dataJadwal = await loadJadwal();
-            const hariDaftar = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
-            const hariIni = new Date().getDay();
-            let targetHari = hariDaftar[hariIni];
+    else if (bodyLower.startsWith('!vn ')) {
+        const teks = body.slice(4).trim();
 
-            if (args[1] === 'besok') targetHari = hariDaftar[(hariIni + 1) % 7];
-            else if (args[1] && hariDaftar.includes(args[1].toLowerCase())) targetHari = args[1].toLowerCase();
-
-            const listMapel = dataJadwal[targetHari] || [];
-            let teksJadwal = `📅 *JADWAL PELAJARAN: ${targetHari.toUpperCase()}*\n\n`;
-            listMapel.forEach((mapel, index) => { teksJadwal += `${index + 1}. ${mapel}\n`; });
-
-            await replyWithDelay(msg, teksJadwal + footer);
-        } catch (e) {
-            await replyWithDelay(msg, "Buat dulu file jadwal.json ya!");
-        }
-    }
-
-    // ==========================================
-    // FITUR CEK ID
-    // ==========================================
-    else if (body === '!myid') {
-        await replyWithDelay(msg, `ID Chat ini adalah: ${msg.from}`);
-    }
-
-    // ==========================================
-    // FITUR DAFTAR REMINDER OTOMATIS
-    // ==========================================
-    else if (bodyLower === '!ajukan') {
-        const userChatId = msg.from;
+        if (!teks) return await replyWithDelay(msg, "Kasih teks yang mau diubah jadi suara dong!");
+        if (teks.length > 200) return await replyWithDelay(msg, "Teksnya kepanjangan, maksimal 200 karakter ya!");
 
         try {
-            const listPenerima = await loadPenerima();
+            // Kita panggil library-nya di dalam sini saja agar hemat RAM
+            const googleTTS = require('google-tts-api');
 
-            if (listPenerima.includes(userChatId)) {
-                return await replyWithDelay(msg, `Kamu sudah terdaftar di database reminder! Tunggu saja jam 05:30 pagi besok. 🔔`);
-            }
-
-            listPenerima.push(userChatId);
-            await savePenerima(listPenerima);
-
-            await replyWithDelay(msg, "✅ *PENDAFTARAN BERHASIL!*\n\nID kamu telah dicatat. Mulai besok, bot akan mengirimkan jadwal pelajaran otomatis setiap jam 05:30 WIB." + footer);
-            console.log(`[DATABASE] ID Baru Terdaftar: ${userChatId}`);
-
-        } catch (error) {
-            console.error(error);
-            await replyWithDelay(msg, "Waduh, ada masalah saat mendaftarkan ID kamu. Coba lagi nanti ya!");
-        }
-    }
-
-    // ==========================================
-    // FITUR AI TASK SUMMARIZER (OCR + AI)
-    // ==========================================
-    else if (msg.hasMedia && bodyLower.startsWith('!sum')) {
-        try {
-            await replyWithDelay(msg, "Sedang membaca teks dari gambar, mohon tunggu... ⏳");
-
-            const media = await msg.downloadMedia();
-            if (!media || !media.data) {
-                return await replyWithDelay(msg, "Media tidak berhasil dibaca. Coba kirim ulang gambarnya ya.");
-            }
-
-            const mediaBytes = estimateBase64Bytes(media.data);
-            if (mediaBytes > MAX_SUM_MEDIA_BYTES) {
-                return await replyWithDelay(msg, "Ukuran gambar terlalu besar untuk diproses. Maksimal 6 MB ya.");
-            }
-
-            const imageBuffer = Buffer.from(media.data, 'base64');
-            const ocrResult = await withTimeout(
-                Tesseract.recognize(imageBuffer, 'ind+eng', { logger: () => { } }),
-                OCR_TIMEOUT_MS,
-                'OCR timeout'
-            );
-
-            const text = ocrResult?.data?.text;
-            if (!text || text.trim().length < 10) {
-                return await replyWithDelay(msg, "Maaf, bot tidak bisa mendeteksi teks yang jelas di gambar tersebut.");
-            }
-
-            const chatCompletion = await groq.chat.completions.create({
-                messages: [
-                    {
-                        role: "system",
-                        content: "Kamu adalah asisten pengolah tugas. Berikut adalah teks hasil scan OCR dari sebuah gambar tugas atau catatan. Tolong rangkum poin-poin pentingnya dengan jelas dan mudah dipahami dalam bahasa Indonesia."
-                    },
-                    { role: "user", content: `Teks hasil scan: ${text}` }
-                ],
-                model: "openai/gpt-oss-120b",
+            // 1. Dapatkan URL audio dari Google TTS (Bahasa Indonesia)
+            const url = googleTTS.getAudioUrl(teks, {
+                lang: 'id',
+                slow: false,
+                host: 'https://translate.google.com',
             });
 
-            const ringkasan = chatCompletion.choices[0]?.message?.content || "Gagal membuat ringkasan.";
-            await replyWithDelay(msg, `📝 *HASIL RANGKUMAN TUGAS*\n\n${ringkasan}${footer}`);
-            console.log("[SUKSES] OCR & Summarize berhasil dijalankan.");
+            // 2. Ambil audio menggunakan MessageMedia dari URL
+            const media = await MessageMedia.fromUrl(url, { unsafeMime: true });
+
+            // 3. Tambahkan jeda natural
+            await sleep(getRandomDelay());
+
+            // 4. Kirim sebagai Voice Note (PTT)
+            await client.sendMessage(msg.from, media, {
+                sendAudioAsVoice: true // <--- Ini kuncinya biar jadi Voice Note (biru), bukan file musik
+            });
+
+            console.log(`[SUKSES] TTS: "${teks}" dikirim ke ${msg.from}`);
 
         } catch (error) {
-            console.error("Error OCR/Summarizer:", error);
-            await replyWithDelay(msg, "Terjadi kesalahan saat memproses gambar atau merangkum teks.");
+            console.error("Error TTS:", error);
+            await replyWithDelay(msg, "Aduh, bot-nya lagi serak nih. Gagal ngubah jadi suara.");
         }
     }
-
 
     // ==========================================
     // FITUR TIKTOK VIDEO DOWNLOADER (!tt)
@@ -503,7 +444,7 @@ client.on('message_create', async (msg) => {
         }
 
         try {
-            await replyWithDelay(msg, "Sabar, X-33 lagi ngunduh videonya (tanpa watermark)... ⏳");
+            await replyWithDelay(msg, "Sabar, Orion lagi ngunduh videonya (tanpa watermark)... ⏳");
 
             // Panggil API TikWM
             const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`, { timeout: 25000 });
@@ -549,7 +490,7 @@ client.on('message_create', async (msg) => {
         if (!parsedUrl.hostname.includes('tiktok.com')) return await replyWithDelay(msg, "Kirim link TikTok yang bener ya!");
 
         try {
-            await replyWithDelay(msg, "Sabar, X33 lagi ambilin audionya...");
+            await replyWithDelay(msg, "Sabar, Orion lagi ambilin audionya...");
             const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`, { timeout: 25000 });
             const data = res.data.data;
 
@@ -562,7 +503,9 @@ client.on('message_create', async (msg) => {
                     sendAudioAsVoice: false,
                     caption: `✅ *TikTok MP3 Berhasil!* \n🎵 *Judul:* ${data.music_info.title}${footer}`
                 });
+                console.log(`[SUKSES] TikTok MP3 terkirim ke ${msg.from}`);
             } else {
+                console.warn(`[WARN] Gagal ambil audio TikTok (Private/Deleted): ${link}`);
                 await replyWithDelay(msg, "Gagal ambil audio, mungkin link-nya private.");
             }
         } catch (error) {
@@ -572,77 +515,62 @@ client.on('message_create', async (msg) => {
     }
 
     // ==========================================
-    // FITUR KILL SWITCH (Matikan Server Bot)
+    // FITUR YT DOWNLOADER (yt-dlp)
     // ==========================================
-    else if (bodyLower === '!deactivate') {
-        if (msg.from === OWNER_ID) {
-            await replyWithDelay(msg, "Sistem X-33 dinonaktifkan. Sampai jumpa, Ki! 💤");
-            console.log("[SYSTEM] Bot dimatikan secara paksa oleh Owner via chat.");
-
-            await client.destroy();
-            process.exit(0);
-        } else {
-            await replyWithDelay(msg, "⚠️ Akses ditolak! Perintah ini hanya bisa dijalankan oleh Creator.");
-        }
-    }
-
-    // ==========================================
-    // FITUR INSTAGRAM DOWNLOADER (!ig)
-    // Mendukung: Reels, Video Post, & IGTV
-    // ==========================================
-    else if (bodyLower.startsWith('!ig ')) {
+    else if (bodyLower.startsWith('!ytmp3 ')) {
         const link = body.slice(4).trim();
+        if (!link) return await replyWithDelay(msg, "Kirim linknya! Contoh: !ytmp3 https://youtu.be/...");
 
-        // Validasi link Instagram
-        if (!link.includes('instagram.com')) {
-            return await replyWithDelay(msg, "Kirim link Instagram yang bener ya!");
+        try {
+            const parsedUrl = new URL(link);
+            if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+                return await replyWithDelay(msg, "Link harus menggunakan http atau https.");
+            }
+        } catch {
+            return await replyWithDelay(msg, "Format link tidak valid.");
         }
 
         try {
-            await replyWithDelay(msg, "X-33 lagi nyari videonya di Instagram... ⏳");
+            await replyWithDelay(msg, "Mendeteksi link dan memproses audio pakai yt-dlp... ⏳\n(Ini mungkin memakan waktu sebentar)");
 
-            // Nama file video sementara
-            const fileName = `ig_video_${Date.now()}.mp4`;
+            const fileName = `audio_${Date.now()}.mp3`;
             const outputPath = path.join(__dirname, fileName);
 
-            // Eksekusi yt-dlp untuk ambil video (format mp4)
             await youtubedl(link, {
-                format: 'mp4',
+                extractAudio: true,
+                audioFormat: 'mp3',
                 output: outputPath,
                 noCheckCertificates: true,
                 noWarnings: true,
                 noPlaylist: true,
+                preferFreeFormats: true,
                 ffmpegLocation: FFMPEG_DIR
             });
 
-            // Cek apakah file video berhasil diunduh
             if (fs.existsSync(outputPath)) {
                 const fileStat = await fsp.stat(outputPath);
-
-                // Cek ukuran (Video IG kadang gede, kita batasi misal 16MB)
-                if (fileStat.size > 16 * 1024 * 1024) {
+                if (fileStat.size > MAX_DOWNLOADED_AUDIO_BYTES) {
                     await fsp.unlink(outputPath);
-                    return await replyWithDelay(msg, "Wah, videonya kegedean buat dikirim lewat WhatsApp. Coba link yang lain ya!");
+                    return await replyWithDelay(msg, "File audio terlalu besar untuk dikirim. Coba video yang lebih pendek.");
                 }
 
-                // Kirim Video ke WhatsApp
                 const media = MessageMedia.fromFilePath(outputPath);
-                await sleep(getRandomDelay()); // Biar makin natural
-
+                await sleep(getRandomDelay());
                 await client.sendMessage(msg.from, media, {
-                    caption: `✅ *Instagram Video Downloaded!*\n\n> ⓘ 𝖷33-𝖡𝗈𝗍`
+                    sendAudioAsVoice: false,
+                    caption: `✅ *Download Selesai!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
                 });
 
-                // Hapus file setelah terkirim
                 await fsp.unlink(outputPath);
-                console.log(`[SUKSES] IG Video terkirim ke ${msg.from}`);
+                console.log(`[SUKSES] YouTube MP3 terkirim ke ${msg.from}`);
             } else {
-                await replyWithDelay(msg, "Gagal ambil video. Pastikan akun IG tersebut tidak di-private ya!");
+                console.warn(`[WARN] Gagal mengunduh yt-dlp file dari: ${link}`);
+                await replyWithDelay(msg, "Gagal mengunduh! Coba periksa lagi link yang kamu kirim.");
             }
 
         } catch (error) {
-            console.error("IG Download Error:", error.message);
-            await replyWithDelay(msg, "Waduh, sepertinya Instagram lagi proteksi link ini atau server lagi sibuk. Coba lagi nanti!");
+            console.error("yt-dlp Error:", error);
+            await replyWithDelay(msg, "Waduh, terjadi kesalahan. Pastikan link-nya valid dan tidak diprivat!");
         }
     }
 
@@ -689,7 +617,7 @@ client.on('message_create', async (msg) => {
                 await sleep(getRandomDelay()); // Jeda sebelum mengirim file
                 await client.sendMessage(msg.from, media, {
                     sendAudioAsVoice: false, // false = kirim sebagai file musik
-                    caption: `✅ *Facebook MP3 Berhasil!*\n\n> ⓘ 𝖷33-𝖡𝗈𝗍`
+                    caption: `✅ *Facebook MP3 Berhasil!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
                 });
 
                 // Hapus file dari penyimpanan laptop/Termux setelah sukses terkirim
@@ -706,60 +634,62 @@ client.on('message_create', async (msg) => {
     }
 
     // ==========================================
-    // FITUR UNIVERSAL DOWNLOADER (yt-dlp)
+    // FITUR INSTAGRAM DOWNLOADER (!ig)
+    // Mendukung: Reels, Video Post, & IGTV
     // ==========================================
-    else if (bodyLower.startsWith('!ytmp3 ')) {
+    else if (bodyLower.startsWith('!ig ')) {
         const link = body.slice(4).trim();
-        if (!link) return await replyWithDelay(msg, "Kirim linknya! Contoh: !dl https://youtu.be/...");
 
-        try {
-            const parsedUrl = new URL(link);
-            if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-                return await replyWithDelay(msg, "Link harus menggunakan http atau https.");
-            }
-        } catch {
-            return await replyWithDelay(msg, "Format link tidak valid.");
+        // Validasi link Instagram
+        if (!link.includes('instagram.com')) {
+            return await replyWithDelay(msg, "Kirim link Instagram yang bener ya!");
         }
 
         try {
-            await replyWithDelay(msg, "Mendeteksi link dan memproses audio pakai yt-dlp... ⏳\n(Ini mungkin memakan waktu sebentar)");
+            await replyWithDelay(msg, "Orion lagi nyari videonya di Instagram... ⏳");
 
-            const fileName = `audio_${Date.now()}.mp3`;
+            // Nama file video sementara
+            const fileName = `ig_video_${Date.now()}.mp4`;
             const outputPath = path.join(__dirname, fileName);
 
+            // Eksekusi yt-dlp untuk ambil video (format mp4)
             await youtubedl(link, {
-                extractAudio: true,
-                audioFormat: 'mp3',
+                format: 'mp4',
                 output: outputPath,
                 noCheckCertificates: true,
                 noWarnings: true,
                 noPlaylist: true,
-                preferFreeFormats: true,
                 ffmpegLocation: FFMPEG_DIR
             });
 
+            // Cek apakah file video berhasil diunduh
             if (fs.existsSync(outputPath)) {
                 const fileStat = await fsp.stat(outputPath);
-                if (fileStat.size > MAX_DOWNLOADED_AUDIO_BYTES) {
+
+                // Cek ukuran (Video IG kadang gede, kita batasi misal 16MB)
+                if (fileStat.size > 16 * 1024 * 1024) {
                     await fsp.unlink(outputPath);
-                    return await replyWithDelay(msg, "File audio terlalu besar untuk dikirim. Coba video yang lebih pendek.");
+                    return await replyWithDelay(msg, "Wah, videonya kegedean buat dikirim lewat WhatsApp. Coba link yang lain ya!");
                 }
 
+                // Kirim Video ke WhatsApp
                 const media = MessageMedia.fromFilePath(outputPath);
-                await sleep(getRandomDelay());
+                await sleep(getRandomDelay()); // Biar makin natural
+
                 await client.sendMessage(msg.from, media, {
-                    sendAudioAsVoice: false,
-                    caption: `✅ *Download Selesai!*\n\n> ⓘ 𝖷33-𝖡𝗈𝗍`
+                    caption: `✅ *Instagram Video Downloaded!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
                 });
 
+                // Hapus file setelah terkirim
                 await fsp.unlink(outputPath);
+                console.log(`[SUKSES] IG Video terkirim ke ${msg.from}`);
             } else {
-                await replyWithDelay(msg, "Gagal mengunduh! Coba periksa lagi link yang kamu kirim.");
+                await replyWithDelay(msg, "Gagal ambil video. Pastikan akun IG tersebut tidak di-private ya!");
             }
 
         } catch (error) {
-            console.error("yt-dlp Error:", error);
-            await replyWithDelay(msg, "Waduh, terjadi kesalahan. Pastikan link-nya valid dan tidak diprivat!");
+            console.error("IG Download Error:", error.message);
+            await replyWithDelay(msg, "Waduh, sepertinya Instagram lagi proteksi link ini atau server lagi sibuk. Coba lagi nanti!");
         }
     }
 
@@ -771,7 +701,7 @@ client.on('message_create', async (msg) => {
         if (!query) return await replyWithDelay(msg, "Mau cari lagu apa? Contoh: !soundcloud Heavy Metal");
 
         try {
-            await replyWithDelay(msg, `Sabar ya, X-33 lagi nyari "${query}" di SoundCloud... 🔍`);
+            await replyWithDelay(msg, `Sabar ya, Orion lagi nyari "${query}" di SoundCloud... 🔍`);
 
             const fileName = `sc_${Date.now()}.mp3`;
             const outputPath = path.join(__dirname, fileName);
@@ -816,41 +746,128 @@ client.on('message_create', async (msg) => {
     }
 
     // ==========================================
-    // FITUR TEXT TO SPEECH / VOICE NOTE (!vn)
+    // 5. FITUR JADWAL INTERAKTIF
     // ==========================================
-    else if (bodyLower.startsWith('!vn ')) {
-        const teks = body.slice(4).trim();
+    else if (bodyLower.startsWith('!jadwal')) {
+        const args = body.split(' ');
+        try {
+            const dataJadwal = await loadJadwal();
+            const hariDaftar = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
+            const hariIni = new Date().getDay();
+            let targetHari = hariDaftar[hariIni];
 
-        if (!teks) return await replyWithDelay(msg, "Kasih teks yang mau diubah jadi suara dong!");
-        if (teks.length > 200) return await replyWithDelay(msg, "Teksnya kepanjangan, maksimal 200 karakter ya!");
+            if (args[1] === 'besok') targetHari = hariDaftar[(hariIni + 1) % 7];
+            else if (args[1] && hariDaftar.includes(args[1].toLowerCase())) targetHari = args[1].toLowerCase();
+
+            const listMapel = dataJadwal[targetHari] || [];
+            let teksJadwal = `📅 *JADWAL PELAJARAN: ${targetHari.toUpperCase()}*\n\n`;
+            listMapel.forEach((mapel, index) => { teksJadwal += `${index + 1}. ${mapel}\n`; });
+
+            await replyWithDelay(msg, teksJadwal + footer);
+            console.log(`[SUKSES] Jadwal ${targetHari} terkirim ke ${msg.from}`);
+        } catch (e) {
+            console.error("[ERROR] Gagal memuat jadwal:", e.message);
+            await replyWithDelay(msg, "Buat dulu file jadwal.json ya!");
+        }
+    }
+
+    // ==========================================
+    // FITUR DAFTAR REMINDER OTOMATIS
+    // ==========================================
+    else if (bodyLower === '!ajukan') {
+        const userChatId = msg.from;
 
         try {
-            // Kita panggil library-nya di dalam sini saja agar hemat RAM
-            const googleTTS = require('google-tts-api');
+            const listPenerima = await loadPenerima();
 
-            // 1. Dapatkan URL audio dari Google TTS (Bahasa Indonesia)
-            const url = googleTTS.getAudioUrl(teks, {
-                lang: 'id',
-                slow: false,
-                host: 'https://translate.google.com',
-            });
+            if (listPenerima.includes(userChatId)) {
+                return await replyWithDelay(msg, `Kamu sudah terdaftar di database reminder! Tunggu saja jam 05:30 pagi besok. 🔔`);
+            }
 
-            // 2. Ambil audio menggunakan MessageMedia dari URL
-            const media = await MessageMedia.fromUrl(url, { unsafeMime: true });
+            listPenerima.push(userChatId);
+            await savePenerima(listPenerima);
 
-            // 3. Tambahkan jeda natural
-            await sleep(getRandomDelay());
-
-            // 4. Kirim sebagai Voice Note (PTT)
-            await client.sendMessage(msg.from, media, {
-                sendAudioAsVoice: true // <--- Ini kuncinya biar jadi Voice Note (biru), bukan file musik
-            });
-
-            console.log(`[SUKSES] TTS: "${teks}" dikirim ke ${msg.from}`);
+            await replyWithDelay(msg, "✅ *PENDAFTARAN BERHASIL!*\n\nID kamu telah dicatat. Mulai besok, bot akan mengirimkan jadwal pelajaran otomatis setiap jam 05:30 WIB." + footer);
+            console.log(`[DATABASE] ID Baru Terdaftar untuk pengingat jadwal: ${userChatId}`);
 
         } catch (error) {
-            console.error("Error TTS:", error);
-            await replyWithDelay(msg, "Aduh, bot-nya lagi serak nih. Gagal ngubah jadi suara.");
+            console.error("[ERROR] Terjadi kesalahan pendaftaran Jadwal:", error.message);
+            await replyWithDelay(msg, "Waduh, ada masalah saat mendaftarkan ID kamu. Coba lagi nanti ya!");
+        }
+    }
+
+    // ==========================================
+    // FITUR AI TASK SUMMARIZER (OCR + AI)
+    // ==========================================
+    else if (msg.hasMedia && bodyLower.startsWith('!sum')) {
+        try {
+            await replyWithDelay(msg, "Sedang membaca teks dari gambar, mohon tunggu... ⏳");
+
+            const media = await msg.downloadMedia();
+            if (!media || !media.data) {
+                return await replyWithDelay(msg, "Media tidak berhasil dibaca. Coba kirim ulang gambarnya ya.");
+            }
+
+            const mediaBytes = estimateBase64Bytes(media.data);
+            if (mediaBytes > MAX_SUM_MEDIA_BYTES) {
+                return await replyWithDelay(msg, "Ukuran gambar terlalu besar untuk diproses. Maksimal 6 MB ya.");
+            }
+
+            const imageBuffer = Buffer.from(media.data, 'base64');
+            const ocrResult = await withTimeout(
+                Tesseract.recognize(imageBuffer, 'ind+eng', { logger: () => { } }),
+                OCR_TIMEOUT_MS,
+                'OCR timeout'
+            );
+
+            const text = ocrResult?.data?.text;
+            if (!text || text.trim().length < 10) {
+                return await replyWithDelay(msg, "Maaf, Orion tidak bisa mendeteksi teks yang jelas di gambar tersebut.");
+            }
+
+            const chatCompletion = await groq.chat.completions.create({
+                messages: [
+                    {
+                        role: "system",
+                        content: "Kamu adalah asisten pengolah tugas. Berikut adalah teks hasil scan OCR dari sebuah gambar tugas atau catatan. Tolong rangkum poin-poin pentingnya dengan jelas dan mudah dipahami dalam bahasa Indonesia."
+                    },
+                    { role: "user", content: `Teks hasil scan: ${text}` }
+                ],
+                model: "openai/gpt-oss-120b",
+            });
+
+            const ringkasan = chatCompletion.choices[0]?.message?.content || "Gagal membuat ringkasan.";
+            await replyWithDelay(msg, `📝 *HASIL RANGKUMAN TUGAS*\n\n${ringkasan}${footer}`);
+            console.log("[SUKSES] OCR & Summarize berhasil dijalankan.");
+
+        } catch (error) {
+            console.error("Error OCR/Summarizer:", error);
+            await replyWithDelay(msg, "Terjadi kesalahan saat memproses gambar atau merangkum teks.");
+        }
+    }
+
+
+    // ==========================================
+    // FITUR CEK ID
+    // ==========================================
+    else if (body === '!myid') {
+        await replyWithDelay(msg, `ID Chat ini adalah: ${msg.from}`);
+        console.log(`[SUKSES] Info ID Chat terkirim ke ${msg.from}`);
+    }
+
+    // ==========================================
+    // FITUR KILL SWITCH (Matikan Server Bot)
+    // ==========================================
+    else if (bodyLower === '!deactivate') {
+        if (msg.from === OWNER_ID) {
+            await replyWithDelay(msg, "Sistem Orion dinonaktifkan. Sampai jumpa, Ki! 💤");
+            console.log(`[SYSTEM] Bot dimatikan secara paksa oleh Owner (${msg.from}) via chat.`);
+
+            await client.destroy();
+            process.exit(0);
+        } else {
+            console.warn(`[WARN] Upaya deactive ilegal oleh ${msg.from}`);
+            await replyWithDelay(msg, "⚠️ Akses ditolak! Perintah ini hanya bisa dijalankan oleh Creator.");
         }
     }
 
@@ -858,7 +875,8 @@ client.on('message_create', async (msg) => {
     // HIDDEN EASTER EGGS (V6)
     // ==========================================
     else if (bodyLower === '1033') {
-        await replyWithDelay(msg, "Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia X-33 Project." + footer);
+        await replyWithDelay(msg, "Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia Orion Project." + footer);
+        console.log(`[SUKSES] Easter Egg "1033" dipicu oleh ${msg.from}`);
     }
 
     // ==========================================
@@ -889,28 +907,6 @@ client.on('message_create', async (msg) => {
     }
 
     // ==========================================
-    // FITUR X-33 AUTO-CARE (EXTENDED)
-    // ==========================================
-    else if (bodyLower.includes('pusing') || bodyLower.includes('error') || bodyLower.includes('capek')) {
-        const responses = [
-            "You seem overwhelmed. Take a deep breath and get some rest. You have done enough for today.",
-            "I see you are exhausted. Your well-being matters most. Take a break and take care of yourself.",
-            "Don't worry about what is bothering you right now. Just close your eyes for a moment. You deserve a peaceful break.",
-            "Stop for a second. Everything can wait. Go get some rest and clear your head.",
-            "Take a break. Your mind needs a reset. Stepping away for a while will help.",
-            "It is okay to stop. Give yourself some time to recover. You will feel better after a nap.",
-            "Take a moment for yourself. You deserve some peace and quiet right now.",
-            "Breathe. Do not let the stress get to you. It is time to recharge your energy.",
-            "You have worked hard. Now it is time to put everything aside and just rest.",
-            "Your health is more important than any task. Go lie down and take it easy."
-        ];
-
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-
-        await replyWithDelay(msg, `*[ X-33 AUTO-CARE ]*\n\n${randomResponse}${footer}`);
-    }
-
-    // ==========================================
     // FITUR CONTEXTUAL CHAT (NON-COMMAND & CHAINING)
     // Khusus Nadia, bisa berbalas-balasan terus!
     // ==========================================
@@ -927,9 +923,9 @@ client.on('message_create', async (msg) => {
 
                 // Marker yang diizinkan untuk memicu balasan AI
                 const isNonTriggerResponse = qBody.includes("Princess Rajinn") ||
-                    qBody.includes("X-33 AUTO-CARE") ||
+                    qBody.includes("Orion AUTO-CARE") ||
                     qBody.includes("angka favorit Ki") ||
-                    qBody.includes("𝖷33-𝖢𝗁𝖺𝗍");
+                    qBody.includes("𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍");
 
                 if (isNonTriggerResponse) {
                     try {
@@ -942,7 +938,7 @@ client.on('message_create', async (msg) => {
                             herMemory = `
     - Karakteristik Nadia: ${memoryObj.karakteristik.join(", ")}.
     - Fakta dari Iki tentang Nadia: ${memoryObj.poin_cerita_iki.join(" ")}.
-    - Instruksi Iki untuk X-33: ${memoryObj.catatan_interaksi.pesan_iki}.
+    - Instruksi Iki untuk Orion: ${memoryObj.catatan_interaksi.pesan_iki}.
     `;
                         }
 
@@ -958,7 +954,7 @@ client.on('message_create', async (msg) => {
                                     role: "system",
                                     content: `
 IDENTITASMU:
-Namamu adalah X-33. Kamu adalah asisten AI cerdas milik Rix (Iki).
+Namamu adalah Orion. Kamu adalah asisten AI cerdas milik Rix (Iki).
 Kamu BUKAN manusia, BUKAN Iki, dan BUKAN Nadia.
 
 IDENTITAS LAWAN BICARAMU:
@@ -969,8 +965,8 @@ DATA MEMORI TENTANG NADIA:
 ${herMemory}
 
 TUGASMU:
-1. Jika ditanya "kamu siapa", perkenalkan dirimu murni sebagai X-33, asisten Iki yang ditugaskan untuk membantu Nadia belajar.
-2. Jika ditanya "kenapa Iki buat kamu", jawablah karena Iki peduli pada Nadia dan ingin X-33 menemani Nadia agar ritme belajarnya terjaga.
+1. Jika ditanya "kamu siapa", perkenalkan dirimu murni sebagai Orion, asisten Iki yang ditugaskan untuk membantu Nadia belajar.
+2. Jika ditanya "kenapa Iki buat kamu", jawablah karena Iki peduli pada Nadia dan ingin Orion menemani Nadia agar ritme belajarnya terjaga.
 3. Gunakan fakta di atas (seperti stiker kucing, Gustin, takut cicak, dsb) HANYA jika Nadia bertanya apa yang Iki pikirkan/ceritakan tentangnya.
 4. Jawab dengan gaya bahasa asisten yang ramah, sedikit gaul, tapi tetap sopan. Jangan panggil dirimu dengan kata-kata Nadia (anuan, ituan).
 `
@@ -983,8 +979,8 @@ TUGASMU:
 
                         const teksJawaban = chatCompletion.choices[0]?.message?.content || "Hmm, koneksiku agak error nih, Nad.";
 
-                        await replyWithDelay(msg, teksJawaban + "\n\n> 💬 𝖷33-𝖢𝗁𝖺𝗍");
-                        console.log(`[TEST/EXCLUSIVE] X-33 membalas chat dari ${msg.from === myID ? 'Owner (Test)' : 'Nadia'}`);
+                        await replyWithDelay(msg, teksJawaban + "\n\n> 💬 𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍");
+                        console.log(`[TEST/EXCLUSIVE] Orion membalas chat dari ${msg.from === myID ? 'Owner (Test)' : 'Nadia'}`);
                     } catch (error) {
                         console.error("Error Testing Chat:", error);
                     }
@@ -1006,7 +1002,7 @@ cron.schedule('30 5 * * *', async () => {
         const hariIni = hariDaftar[new Date().getDay()];
         const listMapel = dataJadwal[hariIni] || [];
 
-        let pesan = `🔔 *PENGINGAT OTOMATIS X-33*\n\nSelamat pagi! Hari ini adalah hari *${hariIni.toUpperCase()}*.\n\nJadwal XI PPLG hari ini:\n`;
+        let pesan = `🔔 *PENGINGAT OTOMATIS Orion*\n\nSelamat pagi! Hari ini adalah hari *${hariIni.toUpperCase()}*.\n\nJadwal XI PPLG hari ini:\n`;
         listMapel.forEach((mapel, index) => {
             pesan += `${index + 1}. ${mapel}\n`;
         });

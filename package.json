@@ -11,10 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
     "@google/genai": "^1.48.0",
     "axios": "^1.14.0",
     "dotenv": "^17.4.1",
+    "google-tts-api": "^2.0.2",
     "groq-sdk": "^1.1.2",
+    "instagram-url-direct": "^2.0.7",
     "node-cron": "^4.2.1",
     "qrcode-terminal": "^0.12.0",
     "tesseract.js": "^7.0.0",
