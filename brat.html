@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root { --main-color: #ffffff; } /* Warna Putih */
-        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: transparent; }
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: green; }
         #output {
-            width: 500px; height: 500px;
+            width: 600px; height: 600px;
             background-color: var(--main-color);
             display: flex; justify-content: center; align-items: center;
-            padding: 40px; box-sizing: border-box; text-align: left;
+            box-sizing: border-box; text-align: left; padding: 5px;
         }
         #brat-text {
             font-family: "Arial Narrow", Arial, sans-serif;
             font-weight: normal;
-            font-size: 115px; /* Ukuran awal (maksimal) */
+            font-size: 100px; /* Ukuran awal (maksimal) */
             line-height: 1.1;
-            letter-spacing: -2px;
+            letter-spacing: -1px;
             color: black;
-            filter: blur(1.5px); /* Efek blur khas Brat */
+            filter: blur(2.5px); /* Efek blur khas Brat */
             word-wrap: break-word;
             max-width: 100%;
         }
@@ -27,7 +27,7 @@
 </head>
 <body>
     <div id="output">
-        <div id="brat-text">qnsbkasakj ajbscjabc akjcbkjab</div>
+        <div id="brat-text">SEIURSDFJ SDJFSKD SKDJFNSKJDF SDFKSJDF</div>
     </div>
 
     <script>
@@ -35,13 +35,13 @@
             const textEl = document.getElementById('brat-text');
             
             // 1. Reset ke ukuran maksimal (150px) setiap kali teks baru dimasukkan
-            let fontSize = 115; 
+            let fontSize = 100; 
             textEl.style.fontSize = fontSize + 'px';
 
             // 2. Tentukan batas aman. 
             // Karena tinggi/lebar kotak 500px dan ada padding 40px (atas-bawah/kiri-kanan = 80px),
             // maka batas area aman teks adalah 500 - 80 = 420px.
-            const maxSafeSize = 420;
+            const maxSafeSize = 590;
 
             // 3. Logika Pengecilan: 
             // Selama tinggi atau lebar teks melebihi 420px, kurangi font-size terus-menerus.
