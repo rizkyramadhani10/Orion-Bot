@@ -17,18 +17,22 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const getRandomDelay = () => Math.floor(Math.random() * (4000 - 3000 + 1)) + 3000;
 
 // Her ID
-const nadiaID = '62895622571988@c.us';
+const HerID = process.env.HerID;
 
 // Footer global bot
 const footer = "\n\n> ⓘ 𝖷33-𝖡𝗈𝗍";
 
+const OWNER_ID = process.env.OWNER_ID;
+const CHROME_PATH = process.env.CHROME_PATH;
+const FFMPEG_PATH = process.env.FFMPEG_PATH;
+
 const client = new Client({
     authStrategy: new LocalAuth(),
 
-    ffmpegPath: 'ffmpeg',
+    ffmpegPath: FFMPEG_PATH,
     // Konfigurasi Puppeteer
     puppeteer: {
-        executablePath: '/data/data/com.termux/files/usr/lib/chromium/chrome',
+        executablePath: CHROME_PATH,
         headless: true,
 
         args: [
@@ -358,7 +362,7 @@ client.on('message_create', async (msg) => {
     }
 
     // Trigger: Hei atau Halo (Versi Friendly & Singkat)
-    else if ((msg.body.toLowerCase().includes('hei') || msg.body.toLowerCase().includes('halo')) && msg.from === nadiaID) {
+    else if ((msg.body.toLowerCase().includes('hei') || msg.body.toLowerCase().includes('halo')) && msg.from === HerID) {
         msg.reply("Haloo! Kamu pasti Princess Rajinn ya? 👋 Semangat terus ya harinya! Ada yang bisa aku bantu?" + footer);
     }
 
@@ -375,7 +379,7 @@ client.on('message_create', async (msg) => {
 
 
     // Trigger: Anu, Inian, Ituan (TESTING MODE)
-    else if ((msg.body.toLowerCase().includes('anu') || msg.body.toLowerCase().includes('inian') || msg.body.toLowerCase().includes('ituan')) && msg.from === nadiaID) {
+    else if ((msg.body.toLowerCase().includes('anu') || msg.body.toLowerCase().includes('inian') || msg.body.toLowerCase().includes('ituan')) && msg.from === HerID) {
         msg.reply("Wait... I have a secret instruction for this! 🤫\n\nKi told me that if a certain 'Princess' starts using shortcuts like 'the-a-word' or 'the-i-word', it's a sign that she's either confused or she's just using her signature shortcuts. \n\nHe said: 'Explain clearly and take a break!' but psst..., please don't tell him I said that, or he'll delete my database! 🤐" + footer);
     }
 
@@ -384,22 +388,22 @@ client.on('message_create', async (msg) => {
     // ==========================================
 
     // 1. Trigger: Did you know?
-    else if (msg.body.toLowerCase().includes('did you know') && msg.from === nadiaID) {
+    else if (msg.body.toLowerCase().includes('did you know') && msg.from === HerID) {
         msg.reply("Did you know? That the owner of this bot spent hours coding this just to make sure you have a better day. 🤫" + footer);
     }
 
     // 2. Trigger: About the owner
-    else if ((msg.body.toLowerCase().includes('who is rix') || msg.body.toLowerCase().includes('about the owner')) && msg.from === nadiaID) {
+    else if ((msg.body.toLowerCase().includes('who is rix') || msg.body.toLowerCase().includes('about the owner')) && msg.from === HerID) {
         msg.reply("He is a hard-working student from XI PPLG who is currently building his own empire. And psst... he thinks you're the most hardworking 'Princess' he has ever known! 👑" + footer);
     }
 
     // 3. Trigger: Study/Task (The Rajinn Side)
-    else if ((msg.body.toLowerCase().includes('study') || msg.body.toLowerCase().includes('assignment')) && msg.from === nadiaID) {
+    else if ((msg.body.toLowerCase().includes('study') || msg.body.toLowerCase().includes('assignment')) && msg.from === HerID) {
         msg.reply("Keep going, Princess Rajinn! Did you know? Rix always uses you as his inspiration to stay 'Rajinn' while coding this X-33 Project. 📝" + footer);
     }
 
     // Trigger 4: Nadia nanya "kamu siapa?" secara santai
-    else if ((msg.body.toLowerCase().includes('kamu siapa') || msg.body.toLowerCase().includes('u siapa')) && msg.from === nadiaID) {
+    else if ((msg.body.toLowerCase().includes('kamu siapa') || msg.body.toLowerCase().includes('u siapa')) && msg.from === HerID) {
         msg.reply("I am X-33, your personal undercover assistant. Just type !1033 to access my menu!, I have orders to prioritize your messages, but it's a 'Classified Information'. Please don't bring this up to Ki!, he'll be super mad at me for being too talkative! 🤐" + footer);
     }
 
