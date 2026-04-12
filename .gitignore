@@ -1,5 +1,28 @@
+# Dependencies Node.js
 node_modules/
+
+# File Sesi WhatsApp (Penting biar akun WA kamu nggak di-hack!)
 .wwebjs_auth/
 .wwebjs_cache/
-session.json
+
+# File Database / Memori Personal
+her_memory.json
+last_greeting.json
+jadwal.json
+
+# File Rahasia
 .env
+
+# File Json
+cookies.txt
+cookies.json
+chunks.json
+penerima.json
+jadwal.json
+
+# Trained Data
+eng.traineddata
+ind.traineddata
+# Database Sederhana
+penerima.json
+jadwal.json
