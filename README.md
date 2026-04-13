@@ -41,25 +41,20 @@ ALLOWED_MARKERS="Orion,Chat-AI"
 
 ## ⚡ Quick Start
 
-# 1. Clone the repository
-git clone [https://github.com/rizkyramadhani10/Orion-project.git](https://github.com/rizkyramadhani10/Orion-project.git)
+```bash
+# Clone the repository
+git clone https://github.com/rizkyramadhani10/X33-Bot.git
 
-# 2. Enter the directory
-cd Orion-project
-
-# 3. Install dependencies
+# Install dependencies
 npm install
 
-# 4. Start the bot
+# Start development server
 npm run start
-
-## 🚀 Run Commands
-
-- **start**: `npm run start`
-- **test**: `npm run test`
+```
 
 ## 📁 Project Structure
 
+```
 .
 ├── .env                # Environment variables (Ignored by Git)
 ├── .gitignore          # Git ignore rules
@@ -70,6 +65,7 @@ npm run start
 ├── main.js             # Main application entry point
 ├── package.json        # Dependencies & Scripts
 └── README.md           # Documentation
+```
 
 ## 👥 Contributing
 
@@ -87,6 +83,3 @@ Please ensure your code follows the project's style guidelines and includes test
 ## 📜 License
 
 This project is licensed under the ISC License.
-
----
-*This README was generated with ❤️ by [ReadmeBuddy](https://readmebuddy.com)*
