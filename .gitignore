@@ -1,7 +1,7 @@
 # Dependencies Node.js
 node_modules/
 
-# File Sesi WhatsApp (Penting biar akun WA kamu nggak di-hack!)
+# File Sesi WhatsApp
 .wwebjs_auth/
 .wwebjs_cache/
 
