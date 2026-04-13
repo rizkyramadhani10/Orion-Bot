@@ -8,7 +8,7 @@ const path = require('path');
 const axios = require('axios');
 const youtubedl = require('youtube-dl-exec');
 const os = require('os');
-const platform = os.platform(); // Akan menghasilkan 'win32' di laptop, dan 'android' di Termux
+const platform = os.platform();
 require('dotenv').config();
 
 // API KEY GROQ
@@ -16,7 +16,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const qrcode = require('qrcode-terminal');
 
-// Fungsi untuk membuat bot "menunggu"
+// Fungsi delay
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const withTimeout = async (promise, timeoutMs, timeoutMessage) => {
@@ -34,13 +34,9 @@ const withTimeout = async (promise, timeoutMs, timeoutMessage) => {
 
 const estimateBase64Bytes = (base64String) => Math.floor((base64String.length * 3) / 4);
 
-// Delay acak antara 3-4 detik
+// Delay antara 3-4 detik
 const getRandomDelay = () => Math.floor(Math.random() * (4000 - 3000 + 1)) + 3000;
 
-// ==========================================
-// 🔥 HELPER: NATURAL DELAY REPLY (TEKNIK DRY)
-// Fungsi pembungkus untuk membalas pesan dengan status "Mengetik..." dan jeda acak
-// ==========================================
 const replyWithDelay = async (msg, content) => {
     try {
         const chat = await msg.getChat();
@@ -188,10 +184,7 @@ client.on('message_create', async (msg) => {
     // 1. Abaikan status
     if (msg.from === 'status@broadcast' || msg.isStatus) return;
 
-    // 2. Abaikan chat dari diri sendiri (biar gak nyaut pas kamu ngetik manual)
-    // Hapus baris ini kalau kamu lagi mau ngetes fitur bot sendiri
-    // if (msg.fromMe) return;
-
+    // 2. Abaikan pesan sendiri
     if (typeof msg.body === 'string' && (msg.body.includes('𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍') || msg.body.includes('𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍'))) return;
 
     // 3. Pastikan pesan ada isinya dan berupa teks
@@ -363,7 +356,7 @@ ${sapaan}, ${namaUser}! 🌟
 
         try {
             const chat = await msg.getChat();
-            await chat.sendStateTyping(); // Indikator mengetik menyala saat AI mikir
+            await chat.sendStateTyping();
 
             const chatCompletion = await groq.chat.completions.create({
                 messages: [
@@ -393,25 +386,20 @@ ${sapaan}, ${namaUser}! 🌟
         if (teks.length > 200) return await replyWithDelay(msg, "Teksnya kepanjangan, maksimal 200 karakter ya!");
 
         try {
-            // Kita panggil library-nya di dalam sini saja agar hemat RAM
             const googleTTS = require('google-tts-api');
 
-            // 1. Dapatkan URL audio dari Google TTS (Bahasa Indonesia)
             const url = googleTTS.getAudioUrl(teks, {
                 lang: 'id',
                 slow: false,
                 host: 'https://translate.google.com',
             });
 
-            // 2. Ambil audio menggunakan MessageMedia dari URL
             const media = await MessageMedia.fromUrl(url, { unsafeMime: true });
 
-            // 3. Tambahkan jeda natural
             await sleep(getRandomDelay());
 
-            // 4. Kirim sebagai Voice Note (PTT)
             await client.sendMessage(msg.from, media, {
-                sendAudioAsVoice: false // <--- Ini kuncinya biar jadi Voice Note (biru), bukan file musik
+                sendAudioAsVoice: false
             });
 
             console.log(`[SUKSES] TTS: "${teks}" dikirim ke ${msg.from}`);
@@ -442,21 +430,16 @@ ${sapaan}, ${namaUser}! 🌟
         try {
             await replyWithDelay(msg, "Sabar, Orion lagi ngunduh videonya (tanpa watermark)... ⏳");
 
-            // Panggil API TikWM
             const res = await axios.get(`https://www.tikwm.com/api/?url=${link}`, { timeout: 25000 });
             const data = res.data.data;
 
-            // Cek apakah API mengembalikan URL video (data.play)
             if (data && data.play) {
                 const videoUrl = data.play;
 
-                // Ubah URL menjadi format Media untuk dikirim via WhatsApp
                 const media = await MessageMedia.fromUrl(videoUrl, { unsafeMime: true });
 
-                // Tunggu sebentar biar natural
                 await sleep(getRandomDelay());
 
-                // Kirim video ke user
                 await client.sendMessage(msg.from, media, {
                     caption: `🎬 *TikTok Video Downloaded!*\n\n📝 *Caption:* ${data.title}${footer}`
                 });
@@ -576,7 +559,6 @@ ${sapaan}, ${namaUser}! 🌟
     else if (bodyLower.startsWith('!fbmp3 ')) {
         const link = body.slice(7).trim();
 
-        // Validasi dasar link Facebook
         if (!link.includes('facebook.com') && !link.includes('fb.watch') && !link.includes('fb.gg')) {
             return await replyWithDelay(msg, "Kirim link Facebook yang bener ya!");
         }
@@ -584,11 +566,9 @@ ${sapaan}, ${namaUser}! 🌟
         try {
             await replyWithDelay(msg, "Mengekstrak audio dari Facebook, tunggu sebentar... ⏳");
 
-            // Bikin nama file unik
             const fileName = `fb_audio_${Date.now()}.mp3`;
             const outputPath = path.join(__dirname, fileName);
 
-            // Eksekusi yt-dlp menggunakan FFMPEG_DIR yang sudah kita perbaiki tadi
             await youtubedl(link, {
                 extractAudio: true,
                 audioFormat: 'mp3',
@@ -599,24 +579,20 @@ ${sapaan}, ${namaUser}! 🌟
                 ffmpegLocation: FFMPEG_DIR
             });
 
-            // Cek keberhasilan file
             if (fs.existsSync(outputPath)) {
-                // Cek ukuran file (batas aman WA sekitar 16-18 MB)
                 const fileStat = await fsp.stat(outputPath);
                 if (fileStat.size > MAX_DOWNLOADED_AUDIO_BYTES) {
                     await fsp.unlink(outputPath);
                     return await replyWithDelay(msg, "File audionya terlalu besar untuk dikirim WhatsApp. Coba video yang durasinya lebih pendek.");
                 }
 
-                // Kirim media
                 const media = MessageMedia.fromFilePath(outputPath);
-                await sleep(getRandomDelay()); // Jeda sebelum mengirim file
+                await sleep(getRandomDelay()); 
                 await client.sendMessage(msg.from, media, {
-                    sendAudioAsVoice: false, // false = kirim sebagai file musik
+                    sendAudioAsVoice: false, 
                     caption: `✅ *Facebook MP3 Berhasil!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
                 });
 
-                // Hapus file dari penyimpanan laptop/Termux setelah sukses terkirim
                 await fsp.unlink(outputPath);
                 console.log(`[SUKSES] Facebook MP3 terkirim ke ${msg.from}`);
             } else {
@@ -639,10 +615,8 @@ ${sapaan}, ${namaUser}! 🌟
         try {
             await replyWithDelay(msg, "Orion lagi ngambil medianya... ⏳");
 
-            // Mengambil fungsi utama dari package instagram-url-direct
             const { instagramGetUrl } = require('instagram-url-direct');
 
-            // Panggil fungsinya langsung
             const results = await instagramGetUrl(link);
 
             if (results && results.url_list && results.url_list.length > 0) {
@@ -660,8 +634,6 @@ ${sapaan}, ${namaUser}! 🌟
 
         } catch (error) {
             console.error("IG Direct Error:", error);
-            // Tips Debug: Jika masih error "is not a function", coba ganti baris pemanggilannya menjadi:
-            // const results = await instagramGetUrl.default(link);
             await replyWithDelay(msg, "Waduh, gagal nembus Instagram. Coba lagi nanti ya!");
         }
     }
@@ -679,20 +651,18 @@ ${sapaan}, ${namaUser}! 🌟
             const fileName = `sc_${Date.now()}.mp3`;
             const outputPath = path.join(__dirname, fileName);
 
-            // Kita pakai prefix 'scsearch1:' untuk ambil hasil pertama yang paling relevan
             await youtubedl(`scsearch1:${query}`, {
                 extractAudio: true,
                 audioFormat: 'mp3',
                 output: outputPath,
                 noCheckCertificates: true,
                 noWarnings: true,
-                ffmpegLocation: FFMPEG_DIR // Memakai jalur Scoop kamu
+                ffmpegLocation: FFMPEG_DIR 
             });
 
             if (fs.existsSync(outputPath)) {
                 const fileStat = await fsp.stat(outputPath);
 
-                // Cek ukuran (SoundCloud biasanya kecil, tapi buat jaga-jaga)
                 if (fileStat.size > MAX_DOWNLOADED_AUDIO_BYTES) {
                     await fsp.unlink(outputPath);
                     return await replyWithDelay(msg, "Wah, durasi lagunya kepanjangan buat dikirim lewat WhatsApp.");
