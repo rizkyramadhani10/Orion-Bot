@@ -112,10 +112,6 @@ const savePenerima = async (listPenerima) => {
     await fsp.writeFile(PENERIMA_PATH, JSON.stringify(listPenerima, null, 2), 'utf8');
 };
 
-const OWNER_ID = process.env.OWNER_ID;
-const CHROME_PATH = process.env.CHROME_PATH;
-const FFMPEG_PATH = process.env.FFMPEG_PATH;
-
 const client = new Client({
     authStrategy: new LocalAuth(),
 
