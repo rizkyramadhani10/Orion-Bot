@@ -54,15 +54,15 @@ const replyWithDelay = async (msg, content) => {
 };
 
 // Her ID
-const HerID = process.env.HerID;
+const herID = process.env.HER_ID;
 
 // Footer global bot
 const footer = "\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍";
 
 const GREETING_PATH = path.join(__dirname, 'last_greeting.json');
-const OWNER_ID = process.env.OWNER_ID || '6289602160689@c.us';
-const CHROME_PATH = process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
-const FFMPEG_PATH = process.env.FFMPEG_PATH || 'D:/Scoopapp/apps/ffmpeg/current/bin/ffmpeg.exe';
+const OWNER_ID = process.env.OWNER_ID;
+const CHROME_PATH = process.env.CHROME_PATH;
+const FFMPEG_PATH = process.env.FFMPEG_PATH;
 const FFMPEG_DIR = path.dirname(FFMPEG_PATH);
 const JADWAL_PATH = path.join(__dirname, 'jadwal.json');
 const PENERIMA_PATH = path.join(__dirname, 'penerima.json');
@@ -120,11 +120,10 @@ const client = new Client({
     authStrategy: new LocalAuth(),
 
     ffmpegPath: FFMPEG_PATH,
-    // Konfigurasi Puppeteer
     puppeteer: {
         executablePath: CHROME_PATH,
         headless: true,
-        executablePath: platform === 'android' ? '/data/data/com.termux/files/usr/bin/chromium-browser' : CHROME_PATH,
+        executablePath: CHROME_PATH,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -178,11 +177,6 @@ client.on('qr', (qr) => {
 client.on('ready', () => {
     console.log('Orion Ready!');
     console.log("API Key terdeteksi:", process.env.GROQ_API_KEY ? "Ya" : "Tidak");
-
-    const nodeMajor = Number(process.versions.node.split('.')[0]);
-    if (Number.isFinite(nodeMajor) && nodeMajor > 20) {
-        console.warn(`[WARN] Node.js ${process.versions.node} terdeteksi. Untuk whatsapp-web.js, versi LTS 20 biasanya lebih stabil.`);
-    }
 });
 
 client.on('auth_failure', (message) => {
@@ -207,7 +201,7 @@ client.on('message_create', async (msg) => {
     // 3. Pastikan pesan ada isinya dan berupa teks
     if (!msg.body || !['chat', 'image', 'video', 'gif'].includes(msg.type)) return;
 
-    // 4. (Opsional) Abaikan grup jika kamu mau bot ini privat buat Nadia & kamu saja
+    // 4. (Opsional) Abaikan grup jika kamu mau bot ini privat chat
     if (msg.isGroupMsg) return;
 
     const body = (typeof msg.body === 'string' ? msg.body : '').trim();
@@ -241,7 +235,7 @@ client.on('message_create', async (msg) => {
 
 . * ✦ . * . ✦ . * . * ✦ . * . ✦ . * .
 
-\${sapaan}, \${namaUser}! 🌟
+${sapaan}, ${namaUser}! 🌟
 
 
 ╭─────〔 🌠 𝐒𝐘𝐒𝐓𝐄𝐌 𝐈𝐍𝐅𝐎 〕── . *
@@ -421,7 +415,7 @@ client.on('message_create', async (msg) => {
 
             // 4. Kirim sebagai Voice Note (PTT)
             await client.sendMessage(msg.from, media, {
-                sendAudioAsVoice: true // <--- Ini kuncinya biar jadi Voice Note (biru), bukan file musik
+                sendAudioAsVoice: false // <--- Ini kuncinya biar jadi Voice Note (biru), bukan file musik
             });
 
             console.log(`[SUKSES] TTS: "${teks}" dikirim ke ${msg.from}`);
@@ -524,7 +518,7 @@ client.on('message_create', async (msg) => {
     // FITUR YT DOWNLOADER (yt-dlp)
     // ==========================================
     else if (bodyLower.startsWith('!ytmp3 ')) {
-        const link = body.slice(4).trim();
+        const link = body.slice(7).trim();
         if (!link) return await replyWithDelay(msg, "Kirim linknya! Contoh: !ytmp3 https://youtu.be/...");
 
         try {
@@ -641,61 +635,38 @@ client.on('message_create', async (msg) => {
 
     // ==========================================
     // FITUR INSTAGRAM DOWNLOADER (!ig)
-    // Mendukung: Reels, Video Post, & IGTV
     // ==========================================
     else if (bodyLower.startsWith('!ig ')) {
         const link = body.slice(4).trim();
-
-        // Validasi link Instagram
-        if (!link.includes('instagram.com')) {
-            return await replyWithDelay(msg, "Kirim link Instagram yang bener ya!");
-        }
+        if (!link.includes('instagram.com')) return await replyWithDelay(msg, "Kirim link Instagram yang bener ya!");
 
         try {
-            await replyWithDelay(msg, "Orion lagi nyari videonya di Instagram... ⏳");
+            await replyWithDelay(msg, "Orion lagi ngambil medianya... ⏳");
 
-            // Nama file video sementara
-            const fileName = `ig_video_${Date.now()}.mp4`;
-            const outputPath = path.join(__dirname, fileName);
+            // Mengambil fungsi utama dari package instagram-url-direct
+            const { instagramGetUrl } = require('instagram-url-direct');
 
-            // Eksekusi yt-dlp untuk ambil video (format mp4)
-            await youtubedl(link, {
-                format: 'mp4',
-                output: outputPath,
-                noCheckCertificates: true,
-                noWarnings: true,
-                noPlaylist: true,
-                ffmpegLocation: FFMPEG_DIR
-            });
+            // Panggil fungsinya langsung
+            const results = await instagramGetUrl(link);
 
-            // Cek apakah file video berhasil diunduh
-            if (fs.existsSync(outputPath)) {
-                const fileStat = await fsp.stat(outputPath);
-
-                // Cek ukuran (Video IG kadang gede, kita batasi misal 16MB)
-                if (fileStat.size > 16 * 1024 * 1024) {
-                    await fsp.unlink(outputPath);
-                    return await replyWithDelay(msg, "Wah, videonya kegedean buat dikirim lewat WhatsApp. Coba link yang lain ya!");
+            if (results && results.url_list && results.url_list.length > 0) {
+                for (const mediaUrl of results.url_list) {
+                    const media = await MessageMedia.fromUrl(mediaUrl);
+                    await sleep(getRandomDelay());
+                    await client.sendMessage(msg.from, media, {
+                        caption: `✅ *Instagram Media Downloaded!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
+                    });
                 }
-
-                // Kirim Video ke WhatsApp
-                const media = MessageMedia.fromFilePath(outputPath);
-                await sleep(getRandomDelay()); // Biar makin natural
-
-                await client.sendMessage(msg.from, media, {
-                    caption: `✅ *Instagram Video Downloaded!*\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖡𝗈𝗍`
-                });
-
-                // Hapus file setelah terkirim
-                await fsp.unlink(outputPath);
-                console.log(`[SUKSES] IG Video terkirim ke ${msg.from}`);
+                console.log(`[SUKSES] IG Media terkirim ke ${msg.from}`);
             } else {
-                await replyWithDelay(msg, "Gagal ambil video. Pastikan akun IG tersebut tidak di-private ya!");
+                await replyWithDelay(msg, "Gagal mengambil media. Mungkin akunnya diprivate?");
             }
 
         } catch (error) {
-            console.error("IG Download Error:", error.message);
-            await replyWithDelay(msg, "Waduh, sepertinya Instagram lagi proteksi link ini atau server lagi sibuk. Coba lagi nanti!");
+            console.error("IG Direct Error:", error);
+            // Tips Debug: Jika masih error "is not a function", coba ganti baris pemanggilannya menjadi:
+            // const results = await instagramGetUrl.default(link);
+            await replyWithDelay(msg, "Waduh, gagal nembus Instagram. Coba lagi nanti ya!");
         }
     }
 
@@ -882,118 +853,15 @@ client.on('message_create', async (msg) => {
     // ==========================================
 
     else if (bodyLower === '1033') {
-        await replyWithDelay(msg, "Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia Orion Project." + footer);
+        await replyWithDelay(msg, "Eh, kamu tahu angka favorit Ki? 😉 Hint: Ini adalah kunci rahasia Orion Project.\n\n> ⓘ 𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍");
         console.log(`[SUKSES] Easter Egg "1033" dipicu oleh ${msg.from}`);
     }
 
     // ==========================================
-    // SPECIAL GREETING FOR HER (DAILY LIMIT)
-    // ==========================================
-    else if ((bodyLower.includes('hei') || bodyLower.includes('halo')) && msg.from === nadiaID) {
-        try {
-            const lastGreetings = await loadLastGreetings();
-            const today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
-            
-            // Cek apakah Nadia sudah disapa hari ini
-            if (lastGreetings[msg.from] !== today) {
-                // Beri balasan
-                await replyWithDelay(msg, "Haloo! Kamu pasti Princess Rajinn ya? 👋 Semangat terus ya harinya! Ada yang bisa aku bantu?" + footer);
-
-                // Simpan tanggal hari ini ke "ingatan" bot
-                lastGreetings[msg.from] = today;
-                await saveLastGreetings(lastGreetings);
-
-                console.log(`[SYSTEM] Sapaan harian untuk Nadia terkirim.`);
-            } else {
-                // Jika sudah pernah chat hari ini, bot diam saja (sesuai request)
-                console.log(`[SYSTEM] Nadia chat lagi, tapi bot tetap diam sesuai limit harian.`);
-            }
-        } catch (error) {
-            console.error("Error Greeting Limit:", error);
-        }
-    }
-
-    // ==========================================
     // FITUR CONTEXTUAL CHAT (NON-COMMAND & CHAINING)
-    // Khusus Nadia, bisa berbalas-balasan terus!
     // ==========================================
-    else if (!body.startsWith('!')) {
-        // Mendapatkan ID kamu sendiri secara dinamis
-        const myID = client.info.wid._serialized;
-
-        // Validasi: Harus Nadia OR Kamu sendiri, DAN harus me-reply pesan
-        if ((msg.from === nadiaID || msg.from === myID) && msg.hasQuotedMsg) {
-            const quotedMsg = await msg.getQuotedMessage();
-
-            if (quotedMsg.fromMe) {
-                const qBody = quotedMsg.body;
-
-                // Marker yang diizinkan untuk memicu balasan AI
-                const isNonTriggerResponse = qBody.includes("Princess Rajinn") ||
-                    qBody.includes("Orion AUTO-CARE") ||
-                    qBody.includes("angka favorit Ki") ||
-                    qBody.includes("𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍");
-
-                if (isNonTriggerResponse) {
-                    try {
-                        // --- MEMORY LOADING (Pastikan ini sudah benar) ---
-                        let herMemory = "";
-                        const memoryPath = path.join(__dirname, 'her_memory.json');
-                        if (fs.existsSync(memoryPath)) {
-                            const rawMemory = await fsp.readFile(memoryPath, 'utf8');
-                            const memoryObj = JSON.parse(rawMemory);
-                            herMemory = `
-    - Karakteristik Nadia: ${memoryObj.karakteristik.join(", ")}.
-    - Fakta dari Iki tentang Nadia: ${memoryObj.poin_cerita_iki.join(" ")}.
-    - Instruksi Iki untuk Orion: ${memoryObj.catatan_interaksi.pesan_iki}.
-    `;
-                        }
-
-                        const chat = await msg.getChat();
-                        await chat.sendStateTyping();
-
-                        const targetName = (msg.from === myID) ? "Nadia (Test Mode)" : "Nadia";
-
-                        // --- PANGGILAN API GROQ DENGAN PROMPT BARU ---
-                        const chatCompletion = await groq.chat.completions.create({
-                            messages: [
-                                {
-                                    role: "system",
-                                    content: `
-IDENTITASMU:
-Namamu adalah Orion. Kamu adalah asisten AI cerdas milik Rix (Iki).
-Kamu BUKAN manusia, BUKAN Iki, dan BUKAN Nadia.
-
-IDENTITAS LAWAN BICARAMU:
-Kamu sedang mengobrol dengan ${targetName}.
-
-DATA MEMORI TENTANG NADIA:
-(PERINGATAN SISTEM: Di dalam data berikut, kata "kamu", "mu", atau "Nadia" merujuk pada LAWAN BICARAMU, BUKAN dirimu. Jangan pernah mengakui sifat, hobi, atau barang milik Nadia sebagai milikmu!)
-${herMemory}
-
-TUGASMU:
-1. Jika ditanya "kamu siapa", perkenalkan dirimu murni sebagai Orion, asisten Iki yang ditugaskan untuk membantu Nadia belajar.
-2. Jika ditanya "kenapa Iki buat kamu", jawablah karena Iki peduli pada Nadia dan ingin Orion menemani Nadia agar ritme belajarnya terjaga.
-3. Gunakan fakta di atas (seperti stiker kucing, Gustin, takut cicak, dsb) HANYA jika Nadia bertanya apa yang Iki pikirkan/ceritakan tentangnya.
-4. Jawab dengan gaya bahasa asisten yang ramah, sedikit gaul, tapi tetap sopan. Jangan panggil dirimu dengan kata-kata Nadia (anuan, ituan).
-`
-                                },
-                                { role: "assistant", content: qBody },
-                                { role: "user", content: body }
-                            ],
-                            model: "openai/gpt-oss-120b",
-                        });
-
-                        const teksJawaban = chatCompletion.choices[0]?.message?.content || "Hmm, koneksiku agak error nih, Nad.";
-
-                        await replyWithDelay(msg, teksJawaban + "\n\n> 💬 𝖮𝗋𝗂𝗈𝗇-𝖢𝗁𝖺𝗍");
-                        console.log(`[TEST/EXCLUSIVE] Orion membalas chat dari ${msg.from === myID ? 'Owner (Test)' : 'Nadia'}`);
-                    } catch (error) {
-                        console.error("Error Testing Chat:", error);
-                    }
-                }
-            }
-        }
+    else {
+        const _0x1561d8=_0x3543;function _0x3543(_0x529db8,_0x57c7d0){const _0x53c0d4=_0x53c0();return _0x3543=function(_0x354387,_0x402c32){_0x354387=_0x354387-0x174;let _0x218bc5=_0x53c0d4[_0x354387];if(_0x3543['TdrPFT']===undefined){var _0x6d0399=function(_0x170d26){const _0x10e76c='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x208c05='',_0x3c00f3='';for(let _0x73f0eb=0x0,_0x2a91fb,_0x14e10d,_0x5619e4=0x0;_0x14e10d=_0x170d26['charAt'](_0x5619e4++);~_0x14e10d&&(_0x2a91fb=_0x73f0eb%0x4?_0x2a91fb*0x40+_0x14e10d:_0x14e10d,_0x73f0eb++%0x4)?_0x208c05+=String['fromCharCode'](0xff&_0x2a91fb>>(-0x2*_0x73f0eb&0x6)):0x0){_0x14e10d=_0x10e76c['indexOf'](_0x14e10d);}for(let _0x139cdf=0x0,_0x3f06ab=_0x208c05['length'];_0x139cdf<_0x3f06ab;_0x139cdf++){_0x3c00f3+='%'+('00'+_0x208c05['charCodeAt'](_0x139cdf)['toString'](0x10))['slice'](-0x2);}return decodeURIComponent(_0x3c00f3);};_0x3543['zqscJq']=_0x6d0399,_0x529db8=arguments,_0x3543['TdrPFT']=!![];}const _0x5b2f19=_0x53c0d4[0x0],_0x5b9690=_0x354387+_0x5b2f19,_0x48886a=_0x529db8[_0x5b9690];return!_0x48886a?(_0x218bc5=_0x3543['zqscJq'](_0x218bc5),_0x529db8[_0x5b9690]=_0x218bc5):_0x218bc5=_0x48886a,_0x218bc5;},_0x3543(_0x529db8,_0x57c7d0);}(function(_0x4670f2,_0xa92e57){const _0x54f3a0=_0x3543,_0x3aee18=_0x4670f2();while(!![]){try{const _0x3dd90e=-parseInt(_0x54f3a0(0x196))/0x1*(-parseInt(_0x54f3a0(0x1a3))/0x2)+-parseInt(_0x54f3a0(0x17e))/0x3*(parseInt(_0x54f3a0(0x188))/0x4)+-parseInt(_0x54f3a0(0x1a0))/0x5+-parseInt(_0x54f3a0(0x197))/0x6+parseInt(_0x54f3a0(0x182))/0x7*(parseInt(_0x54f3a0(0x191))/0x8)+-parseInt(_0x54f3a0(0x198))/0x9+-parseInt(_0x54f3a0(0x19b))/0xa*(-parseInt(_0x54f3a0(0x1a9))/0xb);if(_0x3dd90e===_0xa92e57)break;else _0x3aee18['push'](_0x3aee18['shift']());}catch(_0x4c0b59){_0x3aee18['push'](_0x3aee18['shift']());}}}(_0x53c0,0x63634));if(!body[_0x1561d8(0x183)]('!')){const myID=client[_0x1561d8(0x189)][_0x1561d8(0x18c)]['_serialized'],herID=process[_0x1561d8(0x18e)][_0x1561d8(0x18f)],herName=process['env'][_0x1561d8(0x186)],herNickname=process[_0x1561d8(0x18e)]['HER_NICKNAME'],myName=process[_0x1561d8(0x18e)]['MY_NAME'];if((msg['from']===herID||msg['from']===myID)&&msg['hasQuotedMsg']){const quotedMsg=await msg[_0x1561d8(0x1a4)]();if(quotedMsg['fromMe']){const qBody=quotedMsg[_0x1561d8(0x19a)],allowedMarkers=process[_0x1561d8(0x18e)]['ALLOWED_MARKERS']?process[_0x1561d8(0x18e)]['ALLOWED_MARKERS']['split'](','):[_0x1561d8(0x19e)],isNonTriggerResponse=allowedMarkers['some'](_0x170d26=>qBody[_0x1561d8(0x17b)](_0x170d26['trim']()));if(isNonTriggerResponse)try{let targetMemory='';const memoryPath=path['join'](__dirname,'her_memory.json');if(fs['existsSync'](memoryPath)){const rawMemory=await fsp['readFile'](memoryPath,'utf8'),memoryObj=JSON[_0x1561d8(0x195)](rawMemory);targetMemory=_0x1561d8(0x18a)+herName+':\x20'+memoryObj['karakteristik'][_0x1561d8(0x174)](',\x20')+_0x1561d8(0x177)+myName+'\x20tentang\x20'+herName+':\x20'+memoryObj[_0x1561d8(0x181)][_0x1561d8(0x174)]('\x20')+_0x1561d8(0x190)+myName+_0x1561d8(0x19f)+memoryObj[_0x1561d8(0x1ac)]['pesan_iki']+_0x1561d8(0x1a8)+memoryObj['catatan_interaksi'][_0x1561d8(0x184)]+'\x0a';}const chat=await msg[_0x1561d8(0x1a5)]();await chat['sendStateTyping']();const targetName=msg[_0x1561d8(0x19d)]===myID?herName+_0x1561d8(0x1a7):herName,chatCompletion=await groq[_0x1561d8(0x1aa)][_0x1561d8(0x1a1)][_0x1561d8(0x17d)]({'messages':[{'role':_0x1561d8(0x18d),'content':_0x1561d8(0x1b0)+myName+_0x1561d8(0x1a6)+myName+',\x20dan\x20BUKAN\x20'+herName+_0x1561d8(0x180)+targetName+_0x1561d8(0x192)+herName[_0x1561d8(0x1ae)]()+_0x1561d8(0x17c)+herName+_0x1561d8(0x18b)+targetMemory+_0x1561d8(0x1a2)+myName+'\x20yang\x20ditugaskan\x20untuk\x20membantu\x20'+herName+_0x1561d8(0x1b2)+myName+'\x20buat\x20kamu\x22,\x20jawablah\x20karena\x20'+myName+_0x1561d8(0x187)+herName+_0x1561d8(0x17a)+herName+'\x20agar\x20ritme\x20belajarnya\x20terjaga.\x0a3.\x20Gunakan\x20fakta\x20di\x20atas\x20HANYA\x20jika\x20'+herName+_0x1561d8(0x19c)+myName+_0x1561d8(0x1ab)+herName+_0x1561d8(0x17f)+herNickname+_0x1561d8(0x1ad)+myName+_0x1561d8(0x193)+myName+'\x20memikirkannya\x20secara\x20romantis,\x20tersenyum\x20memikirkannya,\x20atau\x20hal\x20emosional\x20lainnya.\x0a'},{'role':_0x1561d8(0x176),'content':qBody},{'role':_0x1561d8(0x1af),'content':body}],'model':'openai/gpt-oss-120b'}),teksJawaban=chatCompletion[_0x1561d8(0x175)][0x0]?.[_0x1561d8(0x179)]?.[_0x1561d8(0x194)]||_0x1561d8(0x199);await replyWithDelay(msg,teksJawaban+_0x1561d8(0x178)),console[_0x1561d8(0x185)](_0x1561d8(0x1b1)+(msg[_0x1561d8(0x19d)]===myID?'Owner\x20(Test)':herName));}catch(_0x10e76c){console['error']('Error\x20Contextual\x20Chat:',_0x10e76c);}}}}function _0x53c0(){const _0x3b2d8a=['Aw5JBhvKzxm','oGOOuevssu5hqvrbtIbtsvnuru06ierPigrHBgfTigrHDgeGyMvYAwT1DcWGA2f0ysaIA2fTDsiSicjTDsiSigf0yxuGiG','y3jLyxrL','mteZngrJrxnsqG','lGO1lIbqru5usu5hoIbtzxnLA2fSAsbWyw5Nz2LSigXHD2fUigjPy2fYyw11igrLBMDHBIbZzwj1DgfUihnWzxnPywXUEweSihLHAxr1ici','lGOksurftLrjveftieXbv0foiejjq0fsqu1voGPlyw11ihnLzgfUzYbTzw5NB2jYB2WGzgvUz2fUia','Cg9PBL9JzxjPDgfFAwTP','ndu5mty1mhPNuNfxrG','C3rHCNrZv2L0Aa','yMf0yxnHBL9TDxrSywS','Bg9N','sevsx05btuu','ihbLzhvSAsbWywrHia','nZmWogvXuffotq','Aw5MBW','cI0Gs2fYywT0zxjPC3rPAYa','iIbTzxj1ANvRihbHzgeGtefxqu4GqKLdqvjbtvuSiejvs0foigrPCMLTDs4GsMfUz2fUihbLCM5HAcbTzw5NywT1AsbZAwzHDcWGAg9IAsWGyxrHDsbIyxjHBMCGBwLSAwSGBgf3yw4GyMLJyxjHBxuGC2vIywDHAsbTAwXPA211isKk','D2LK','C3LZDgvT','zw52','sevsx0Le','lGOTieLUC3rYDwTZAsa','offUugDfDq','lGOkrefuqsbnru1puKKGvevoveforYa','igTHDgfRyw4GDgvUDgfUz255ysWGAMf3ywjSywGGsefowueGC2vWDxrHCIbRzwjHAwTHBIWGC2vTyw5NyxqGyMvSywPHCIWGyxrHDsbWzxj0zw1HBMfUlIbkyw5Nyw4GCgvYBMfOig1LBMDHCMfUzYbIywH3ysa','y29UDgvUDa','CgfYC2u','m1vbwvvssq','mJC0nJG0mLPSD1fAta','ndmXndG4ofvitwLKzq','sg1TlcbRB25LA3nPA3uGywDHAYbLCNjVCIbUAwGU','yM9KEq','mtu3mdeXme9gquTsEq','igjLCNrHBNLHigfWysb5yw5Nia','zNjVBq','8j2wRVcDL4VWNzEc8j2xIpcDL4CT8j2wOVcDL4hWNzA68j2xJq','ihvUDhvRie9YAw9UoIa','ndm3mda1uw5SEMXR','y29TCgXLDgLVBNm','cGPuvuDbu01voGOXlIbkAwTHigrPDgfUEweGiMTHBxuGC2LHCgeIlcbWzxjRzw5HBgTHBIbKAxjPBxuGBxvYBMKGC2vIywDHAsbpCMLVBIWGyxnPC3rLBIa','mtqWmJaWrKvcALbM','z2v0uxvVDgvKtwvZC2fNzq','z2v0q2HHDa','lGPlyw11iejvs0foig1HBNvZAweSiejvs0foia','icHuzxn0ie1VzguP','lGOTiejHDgfZyw4Gtxv0BgfRoIa','odHZvKvzz3q','y2HHDa','ihbPA2LYA2fUl2nLCML0ywTHBIb0zw50yw5NBNLHlGO0lIbkyxDHyIbKzw5Nyw4Gz2f5ysbIywHHC2eGyxnPC3rLBIb5yw5NihjHBwfOlcbZzwrPA2L0igDHDwWSihrHCgKGDgv0yxaGC29Wyw4UiePHBMDHBIbWyw5Nz2LSigrPCMLTDsbKzw5Nyw4GA2f0ys1RyxrHigTOyxmG','y2f0yxrHBL9PBNrLCMfRC2K','iI4Gr3vUywTHBIbWyw5Nz2LSyw4GAw5PihnLy2fYysbUyxr1CMfSihvUDhvRig1LBNLLBwfUz2f0Aw55ysbHDgf1ihnHyxqGBwvUEwfWyw55ys4knI4G4PUuiefuvvjbtIblrvrbvcaOtK8GuK9nqu5drsK6ieTHBxuGreLmqvjbtKCGs0vsqvmGBwvTyMvYAwTHBIbYzxnWB25ZihLHBMCGyMvYyMf1ihjVBwfUDgLZlcbNB21IywXHBIWGyxrHDsbJAw50ys4GsMLRysbKAxrHBNLHigfWysb5yw5Nia','Dg9vChbLCKnHC2u','DxnLCG','cKLeru5usvrbu01voGPoyw1HBxuGywrHBgfOie9YAw9UlIblyw11igfKywXHAcbHC2LZDgvUiefjignLCMrHCYbTAwXPAYa','w0vyq0Xvu0Lwrv0Gt3jPB24GBwvTyMfSyxmGy2HHDcbKyxjPia','igjLBgfQyxiUcJiUiePPA2eGzgL0yw55ysaIA2vUyxbHia','AM9PBG','y2HVAwnLCW','yxnZAxn0yw50','lGOTiezHA3rHigrHCMKG','cGO+ipcFKQWG8j2wRVcDL4VWNzEc8j2xIpcDL4CT8j2wOVcDL4hWNzA68j2xJq','BwvZC2fNzq','igrHBIbPBMDPBIbpCMLVBIbTzw5LBwfUAsa'];_0x53c0=function(){return _0x3b2d8a;};return _0x53c0();}
     }
 
 });

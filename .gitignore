@@ -26,3 +26,6 @@ ind.traineddata
 # Database Sederhana
 penerima.json
 jadwal.json
+
+*.mp4
+*.mp3
