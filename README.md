@@ -31,7 +31,7 @@ Create a `.env` file and add the following variables:
 # Bot Owner & Special Contact
 OWNER_ID="your_number@c.us"
 HER_ID="target_number@c.us"
-HER_NAME="Target Name"
+HER_NAME="Special Name"
 HER_NICKNAME="Special Nickname"
 MY_NAME="Your Name"
 
@@ -66,6 +66,8 @@ npm run start
 ├── package.json        # Dependencies & Scripts
 └── README.md           # Documentation
 ```
+💡 Note on Local Files
+Files like jadwal.json and penerima.json are part of the bot's local database. These files are not required to be created manually before the first run, as Orion will handle the data locally. They are excluded from the repository to protect your personal schedule and contact data.
 
 ## 👥 Contributing
 
