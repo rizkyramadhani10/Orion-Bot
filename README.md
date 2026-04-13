@@ -1,6 +1,6 @@
 # 🌌 Orion-Bot (formerly X33-Bot)
 
-![GitHub stars](https://img.shields.io/github/stars/rizkyramadhani10/Orion-project?style=for-the-badge&logo=github) ![GitHub forks](https://img.shields.io/github/forks/rizkyramadhani10/Orion-project?style=for-the-badge&logo=github) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![License](https://img.shields.io/badge/license-ISC-green?style=for-the-badge)
+![GitHub stars](https://img.shields.io/github/stars/rizkyramadhani10/Orion-Bot?style=for-the-badge&logo=github) ![GitHub forks](https://img.shields.io/github/forks/rizkyramadhani10/Orion-Bot?style=for-the-badge&logo=github) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![License](https://img.shields.io/badge/license-ISC-green?style=for-the-badge)
 
 ## 📝 Description
 
