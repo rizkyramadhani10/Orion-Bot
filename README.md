@@ -1,10 +1,10 @@
-# 🌌 Orion-OS (formerly X33-Bot)
+# 🌌 Orion-Bot (formerly X33-Bot)
 
 ![GitHub stars](https://img.shields.io/github/stars/rizkyramadhani10/Orion-project?style=for-the-badge&logo=github) ![GitHub forks](https://img.shields.io/github/forks/rizkyramadhani10/Orion-project?style=for-the-badge&logo=github) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) ![License](https://img.shields.io/badge/license-ISC-green?style=for-the-badge)
 
 ## 📝 Description
 
-**Orion-OS** is a high-performance, multi-functional WhatsApp Bot automation built on the Node.js runtime. Originally known as X33-Bot, it has been heavily refactored to serve as a comprehensive digital assistant. Featuring a sleek terminal-style interface, Orion handles everything from AI-powered contextual conversations and task summarization to high-quality media fetching across various social platforms.
+**Orion-Bot** is a high-performance, multi-functional WhatsApp Bot automation built on the Node.js runtime. Originally known as X33-Bot, it has been heavily refactored to serve as a comprehensive digital assistant. Featuring a sleek terminal-style interface, Orion handles everything from AI-powered contextual conversations and task summarization to high-quality media fetching across various social platforms.
 
 ## ✨ Core Features
 
@@ -37,6 +37,7 @@ MY_NAME="Your Name"
 
 # Allowed triggers for Contextual AI Chat
 ALLOWED_MARKERS="Orion,Chat-AI"
+```
 
 ## ⚡ Quick Start
 
